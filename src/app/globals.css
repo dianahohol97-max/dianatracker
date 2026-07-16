@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---------------------------------------------------------------------------
+   Design tokens — the single source of truth for the visual language.
+   Vigbo-like direction: editorial, image-first, near-monochrome palette with
+   one accent, generous whitespace, large display type.
+--------------------------------------------------------------------------- */
+:root {
+  --color-bg: #fbfaf8;
+  --color-fg: #17161a;
+  --color-muted: #8a8894;
+  --color-accent: #b4552d;
+  --color-border: #e5e2dc;
+
+  --radius: 2px;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-24: 6rem;
+
+  --font-display: 'Georgia', 'Times New Roman', serif;
+  --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+}
+
+html {
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Public gallery photo grid — CSS-columns masonry, zero chrome. */
+.masonry {
+  columns: 1;
+  column-gap: var(--space-4);
+}
+@media (min-width: 640px) {
+  .masonry {
+    columns: 2;
+  }
+}
+@media (min-width: 1024px) {
+  .masonry {
+    columns: 3;
+  }
+}
+.masonry > * {
+  break-inside: avoid;
+  margin-bottom: var(--space-4);
+}
