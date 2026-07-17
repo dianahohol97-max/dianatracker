@@ -1,6 +1,7 @@
 import { siteCssVars, type SiteMode, type ThemeId } from '@/lib/site/themes'
 import type { SiteContent } from '@/lib/site/content'
 import { LeadForm, type LeadFormLabels } from './LeadForm'
+import { ThemeSilence } from './ThemeSilence'
 
 export interface PortfolioItem {
   id: string
@@ -54,6 +55,24 @@ export function SiteRenderer({
   leadForm?: { handle: string | null; labels: LeadFormLabels }
 }) {
   const vars = siteCssVars(theme, mode)
+
+  // «Тиша»/«Опівніч» ship their own distinct layout; other themes still use
+  // the shared block layout below until each gets its own design.
+  if (theme === 'tysha') {
+    return (
+      <div style={vars}>
+        <ThemeSilence
+          content={content}
+          displayName={displayName}
+          logoUrl={logoUrl}
+          portfolio={portfolio}
+          labels={labels}
+          langSwitch={langSwitch}
+          leadForm={leadForm}
+        />
+      </div>
+    )
+  }
 
   const label: React.CSSProperties = {
     fontFamily: 'var(--site-font-label)',
