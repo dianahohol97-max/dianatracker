@@ -119,7 +119,7 @@ export function ThemeSilence({
               <span className={s.sMono}>{portfolio.length}</span>
             </div>
             <div id="portfolio">
-              {groups.map((group, gi) => (
+              {groups.map((group) => (
                 <section key={group.category ?? '_'} style={{ marginBottom: 28 }}>
                   {hasCategories && (
                     <span className={s.sMono} style={{ display: 'block', margin: '0 0 12px' }}>
@@ -127,9 +127,11 @@ export function ThemeSilence({
                     </span>
                   )}
                   <div className={s.sMarquees}>
-                    <Marquee items={group.items} dir={gi % 2 === 0 ? 'm1' : 'm2'} />
-                    {!hasCategories && group.items.length > 3 && (
-                      <Marquee items={[...group.items].reverse()} dir="m2" />
+                    {/* Two rows drifting toward each other — the artifact
+                        signature. Split the group's photos between them. */}
+                    <Marquee items={group.items.filter((_, i) => i % 2 === 0)} dir="m1" />
+                    {group.items.length > 2 && (
+                      <Marquee items={group.items.filter((_, i) => i % 2 === 1)} dir="m2" />
                     )}
                   </div>
                 </section>
