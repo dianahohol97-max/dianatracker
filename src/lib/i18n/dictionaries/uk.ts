@@ -218,6 +218,7 @@ export const uk = {
     portfolioShow: 'Показати на сайті',
     portfolioHide: 'Сховати з сайту',
     portfolioCategory: 'Категорія',
+    portfolioCaption: 'Підпис (напр.: Даша і Марко — Карпати)',
     portfolioUploadTo: 'Завантажити фото в категорію',
     portfolioCategoryEg: 'Напр.: Весілля, Індивідуальні, Сім’я',
     portfolioUncategorized: 'Без категорії',

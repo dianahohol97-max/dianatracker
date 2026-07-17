@@ -19,6 +19,8 @@ export interface PortfolioItem {
   visible?: boolean
   /** Collection this photo is grouped under; null/empty = untagged. */
   category?: string | null
+  /** Optional short title shown as the photo's caption; null/empty = none. */
+  caption?: string | null
 }
 
 /** Portfolio grouped into labeled collections, preserving first-seen order. */

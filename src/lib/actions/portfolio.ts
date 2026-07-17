@@ -78,6 +78,29 @@ export async function setPortfolioCategory(
   revalidatePath(`/${locale}/dashboard/site`)
 }
 
+/** Assign (or clear) the optional per-photo caption shown on the site. */
+export async function setPortfolioCaption(
+  locale: Locale,
+  assetId: string,
+  caption: string
+): Promise<void> {
+  const supabase = createSupabaseServerClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) redirect('/uk/login')
+
+  const trimmed = caption.trim().slice(0, 120)
+  const { error } = await supabase
+    .from('portfolio_assets')
+    .update({ caption: trimmed || null })
+    .eq('id', assetId)
+    .eq('owner_id', user.id)
+  if (error) throw new Error(`Failed to set caption: ${error.message}`)
+
+  revalidatePath(`/${locale}/dashboard/site`)
+}
+
 /** Persist a new portfolio order (position = index in the given id list). */
 export async function reorderPortfolio(locale: Locale, orderedIds: string[]): Promise<void> {
   const supabase = createSupabaseServerClient()
