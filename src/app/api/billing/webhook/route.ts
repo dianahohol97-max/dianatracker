@@ -12,6 +12,24 @@ import { createSupabaseAdminClient } from '@/lib/supabase/admin'
 export const runtime = 'nodejs'
 
 /**
+ * One-off providers (monobank) have no auto-renewal: a paid period becomes
+ * an expiry date on the profile. grace_until doubles as that date — past it,
+ * limits lazily behave as free, same as after a canceled subscription.
+ */
+function oneTimePaidUntil(period: string): string {
+  const until = new Date()
+  if (period === 'year') until.setFullYear(until.getFullYear() + 1)
+  else until.setMonth(until.getMonth() + 1)
+  until.setDate(until.getDate() + GRACE_PERIOD_DAYS)
+  return until.toISOString()
+}
+
+/** Monobank probes webHookUrl with a GET before it starts delivering events. */
+export function GET() {
+  return NextResponse.json({ ok: true })
+}
+
+/**
  * Provider server-to-server callback. The payload signature is verified by
  * the provider class; anything unverifiable is dropped with 400.
  *
@@ -28,23 +46,23 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'billing_not_configured' }, { status: 503 })
   }
 
-  const formData = await request.formData().catch(() => null)
-  if (!formData) {
+  const rawBody = await request.text().catch(() => null)
+  if (!rawBody) {
     return NextResponse.json({ error: 'invalid_body' }, { status: 400 })
   }
-  const params: Record<string, string> = {}
-  formData.forEach((value, key) => {
-    if (typeof value === 'string') params[key] = value
+  const headers: Record<string, string> = {}
+  request.headers.forEach((value, key) => {
+    headers[key.toLowerCase()] = value
   })
 
-  const event = payments.parseWebhook(params)
+  const event = await payments.parseWebhook(rawBody, headers)
   if (!event) {
     return NextResponse.json({ error: 'bad_signature' }, { status: 400 })
   }
 
   const { data: payment } = await admin
     .from('payments')
-    .select('id, user_id, plan, status')
+    .select('id, user_id, plan, period, status')
     .eq('order_id', event.orderId)
     .single()
   if (!payment) {
@@ -57,6 +75,7 @@ export async function POST(request: NextRequest) {
     .eq('id', payment.id)
 
   if (event.status === 'paid') {
+    const graceUntil = payments.recurring ? null : oneTimePaidUntil(payment.period)
     if (isGalleryPlanId(payment.plan)) {
       const plan = GALLERY_PLANS[payment.plan]
       await admin
@@ -64,7 +83,7 @@ export async function POST(request: NextRequest) {
         .update({
           plan: plan.id,
           storage_limit_bytes: planStorageBytes(plan),
-          grace_until: null,
+          grace_until: graceUntil,
         })
         .eq('user_id', payment.user_id)
     } else if (isSitePlanId(payment.plan)) {

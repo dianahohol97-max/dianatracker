@@ -217,7 +217,7 @@ export const en: Dictionary = {
     galleryPlansTitle: 'Galleries',
     sitePlansTitle: 'Sites',
     bundleNote: 'Gallery + Site bundle: 15% off the site while both subscriptions are active.',
-    graceNotice: 'Subscription canceled. The storage limit drops to free on',
+    graceNotice: 'Your paid plan is active until the date below, then the storage limit drops to free:',
     periodMonth: 'Monthly',
     periodYear: 'Yearly',
     planFree: 'Free',

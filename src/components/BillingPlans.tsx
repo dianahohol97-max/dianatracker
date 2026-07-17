@@ -101,6 +101,13 @@ export function BillingPlans({
       if (!response.ok) throw new Error(`checkout ${response.status}`)
       const form = (await response.json()) as { url: string; fields: Record<string, string> }
 
+      // No fields (monobank) → the checkout page is opened by plain redirect;
+      // otherwise (LiqPay) auto-submit a hidden POST form.
+      if (Object.keys(form.fields).length === 0) {
+        window.location.assign(form.url)
+        return
+      }
+
       const element = document.createElement('form')
       element.method = 'POST'
       element.action = form.url
