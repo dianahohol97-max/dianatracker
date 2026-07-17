@@ -10,9 +10,6 @@
   min-height: 100vh;
   overflow: hidden;
 }
-.silence :global(img) {
-  filter: grayscale(1);
-}
 .sPad {
   padding-left: clamp(20px, 5vw, 56px);
   padding-right: clamp(20px, 5vw, 56px);
@@ -69,7 +66,6 @@
   background-position: center;
   background-color: var(--site-line);
   border-radius: var(--site-radius);
-  filter: grayscale(1);
 }
 .sHeroText {
   position: absolute;
@@ -111,6 +107,86 @@
 .sCornerR {
   right: 18px;
 }
+/* night hero (Опівніч): giant serif name over drifting photos */
+.sNight {
+  position: relative;
+  min-height: min(88vh, 720px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  margin: 0 clamp(10px, 2vw, 20px);
+  padding: 60px 24px;
+}
+.sNightName {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+}
+.sNightName h1 {
+  font-family: var(--site-font-display);
+  font-weight: 400;
+  margin: 0;
+  font-size: clamp(40px, 9vw, 104px);
+  line-height: 1.05;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-wrap: balance;
+  text-shadow: 0 4px 60px rgba(0, 0, 0, 0.6);
+}
+.sNightName p {
+  margin: 20px 0 0;
+}
+.sFl {
+  position: absolute;
+  z-index: 1;
+  opacity: 0.92;
+  background-size: cover;
+  background-position: center;
+  background-color: var(--site-line);
+  animation: mid-drift 13s ease-in-out infinite alternate;
+}
+.sFl1 {
+  width: clamp(110px, 17vw, 210px);
+  aspect-ratio: 3 / 4;
+  top: 8%;
+  left: 6%;
+}
+.sFl2 {
+  width: clamp(95px, 14vw, 180px);
+  aspect-ratio: 4 / 3;
+  top: 13%;
+  right: 8%;
+  animation-delay: -4s;
+}
+.sFl3 {
+  width: clamp(100px, 15vw, 190px);
+  aspect-ratio: 1 / 1;
+  bottom: 11%;
+  left: 13%;
+  animation-delay: -8s;
+}
+.sFl4 {
+  width: clamp(120px, 18vw, 220px);
+  aspect-ratio: 3 / 4;
+  bottom: 7%;
+  right: 6%;
+  animation-delay: -2s;
+}
+@keyframes mid-drift {
+  from {
+    transform: translateY(-10px) translateX(0);
+  }
+  to {
+    transform: translateY(12px) translateX(9px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sFl {
+    animation: none;
+  }
+}
+
 /* section label row */
 .sLabels {
   display: flex;
@@ -165,7 +241,6 @@
   background-size: cover;
   background-position: center;
   background-color: var(--site-line);
-  filter: grayscale(1);
 }
 .sMarquee .r34 {
   aspect-ratio: 3 / 4;
