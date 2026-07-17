@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getDictionary } from '@/lib/i18n'
 import { isLocale } from '@/lib/i18n/config'
-import { parseSiteContent } from '@/lib/site/content'
+import { localizedSiteContent, parseSiteContent } from '@/lib/site/content'
 import { isThemeId } from '@/lib/site/themes'
 import { getStorage } from '@/lib/storage'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
@@ -39,7 +39,7 @@ export async function generateMetadata({
   const site = (data as SiteRow[] | null)?.[0]
   if (!site) return { robots: { index: false, follow: false } }
 
-  const content = parseSiteContent(site.content)
+  const content = localizedSiteContent(parseSiteContent(site.content), params.locale)
   const title = content.hero.title || site.display_name || params.handle
   const description =
     (content.about.text || content.hero.subtitle || title).replace(/\s+/g, ' ').slice(0, 160)
@@ -95,7 +95,8 @@ export default async function PublicSitePage({
   )
 
   // Structured data for the PHOTOGRAPHER (their business, not ours).
-  const content = parseSiteContent(site.content)
+  const rawContent = parseSiteContent(site.content)
+  const content = localizedSiteContent(rawContent, locale)
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'ProfessionalService',
@@ -116,18 +117,43 @@ export default async function PublicSitePage({
       />
       <SiteRenderer
         theme={site.theme}
-      mode={site.mode === 'night' ? 'night' : 'light'}
-      content={parseSiteContent(site.content)}
-      displayName={site.display_name}
-      logoUrl={logoUrl}
-      portfolio={portfolio}
-      labels={{
-        portfolio: dict.publicSite.portfolio,
-        about: dict.publicSite.about,
-        pricing: dict.publicSite.pricing,
-        contacts: dict.publicSite.contacts,
-        book: dict.publicSite.book,
-      }}
+        mode={site.mode === 'night' ? 'night' : 'light'}
+        content={content}
+        displayName={site.display_name}
+        logoUrl={logoUrl}
+        portfolio={portfolio}
+        labels={{
+          portfolio: dict.publicSite.portfolio,
+          about: dict.publicSite.about,
+          pricing: dict.publicSite.pricing,
+          contacts: dict.publicSite.contacts,
+          book: dict.publicSite.book,
+        }}
+        langSwitch={
+          rawContent.settings.bilingual
+            ? {
+                current: locale === 'en' ? 'en' : 'uk',
+                hrefUk: `/uk/s/${params.handle}`,
+                hrefEn: `/en/s/${params.handle}`,
+              }
+            : undefined
+        }
+        leadForm={
+          rawContent.settings.leadForm
+            ? {
+                handle: params.handle,
+                labels: {
+                  title: dict.publicSite.leadTitle,
+                  name: dict.publicSite.leadName,
+                  contact: dict.publicSite.leadContact,
+                  message: dict.publicSite.leadMessage,
+                  send: dict.publicSite.leadSend,
+                  sent: dict.publicSite.leadSent,
+                  error: dict.publicSite.leadError,
+                },
+              }
+            : undefined
+        }
       />
     </>
   )

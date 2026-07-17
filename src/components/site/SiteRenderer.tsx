@@ -1,5 +1,6 @@
 import { siteCssVars, type SiteMode, type ThemeId } from '@/lib/site/themes'
 import type { SiteContent } from '@/lib/site/content'
+import { LeadForm, type LeadFormLabels } from './LeadForm'
 
 export interface PortfolioItem {
   id: string
@@ -12,6 +13,13 @@ export interface SiteLabels {
   pricing: string
   contacts: string
   book: string
+}
+
+/** UA ⇄ EN switcher for bilingual sites; hrefs point at the locale routes. */
+export interface LangSwitch {
+  current: 'uk' | 'en'
+  hrefUk: string
+  hrefEn: string
 }
 
 /**
@@ -28,6 +36,8 @@ export function SiteRenderer({
   logoUrl,
   portfolio,
   labels,
+  langSwitch,
+  leadForm,
 }: {
   theme: ThemeId
   mode: SiteMode
@@ -36,6 +46,10 @@ export function SiteRenderer({
   logoUrl: string | null
   portfolio: PortfolioItem[]
   labels: SiteLabels
+  /** Present only for bilingual sites. */
+  langSwitch?: LangSwitch
+  /** Present only when the lead form option is on; handle null in preview. */
+  leadForm?: { handle: string | null; labels: LeadFormLabels }
 }) {
   const vars = siteCssVars(theme, mode)
 
@@ -87,13 +101,39 @@ export function SiteRenderer({
               {brand}
             </span>
           )}
-          <nav style={{ ...label, display: 'flex', gap: 22 }}>
+          <nav style={{ ...label, display: 'flex', gap: 22, alignItems: 'baseline' }}>
             <a href="#portfolio" style={{ color: 'inherit', textDecoration: 'none' }}>{labels.portfolio}</a>
             <a href="#about" style={{ color: 'inherit', textDecoration: 'none' }}>{labels.about}</a>
             {content.pricing.items.length > 0 && (
               <a href="#pricing" style={{ color: 'inherit', textDecoration: 'none' }}>{labels.pricing}</a>
             )}
             <a href="#contact" style={{ color: 'inherit', textDecoration: 'none' }}>{labels.contacts}</a>
+            {langSwitch && (
+              <span style={{ display: 'inline-flex', gap: 8 }}>
+                <a
+                  href={langSwitch.hrefUk}
+                  style={{
+                    color: 'inherit',
+                    textDecoration: langSwitch.current === 'uk' ? 'underline' : 'none',
+                    textUnderlineOffset: 3,
+                    opacity: langSwitch.current === 'uk' ? 1 : 0.55,
+                  }}
+                >
+                  UA
+                </a>
+                <a
+                  href={langSwitch.hrefEn}
+                  style={{
+                    color: 'inherit',
+                    textDecoration: langSwitch.current === 'en' ? 'underline' : 'none',
+                    textUnderlineOffset: 3,
+                    opacity: langSwitch.current === 'en' ? 1 : 0.55,
+                  }}
+                >
+                  EN
+                </a>
+              </span>
+            )}
           </nav>
         </header>
 
@@ -261,6 +301,7 @@ export function SiteRenderer({
               </a>
             )}
           </div>
+          {leadForm && <LeadForm handle={leadForm.handle} labels={leadForm.labels} />}
         </section>
       </div>
     </div>

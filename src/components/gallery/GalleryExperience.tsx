@@ -239,6 +239,42 @@ export function GalleryExperience({
           {eventLine && <span className={s.caps}>{eventLine}</span>}
         </div>
         <span className={`${s.caps} ${s.scrollHint}`}>{labels.scrollHint}</span>
+        {/* UA/EN switcher: client galleries serve international guests too. */}
+        <nav
+          className={s.caps}
+          style={{
+            position: 'absolute',
+            top: 18,
+            right: 20,
+            display: 'flex',
+            gap: 10,
+            zIndex: 2,
+            color: 'rgba(247, 244, 238, 0.85)',
+          }}
+        >
+          <a
+            href={`/uk/g/${slug}`}
+            style={{
+              color: 'inherit',
+              textDecoration: locale === 'uk' ? 'underline' : 'none',
+              textUnderlineOffset: 3,
+              opacity: locale === 'uk' ? 1 : 0.6,
+            }}
+          >
+            UA
+          </a>
+          <a
+            href={`/en/g/${slug}`}
+            style={{
+              color: 'inherit',
+              textDecoration: locale === 'en' ? 'underline' : 'none',
+              textUnderlineOffset: 3,
+              opacity: locale === 'en' ? 1 : 0.6,
+            }}
+          >
+            EN
+          </a>
+        </nav>
       </header>
 
       {/* -------- sticky bar -------- */}

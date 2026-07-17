@@ -197,6 +197,19 @@ export const en: Dictionary = {
       'If booking is enabled, paste your booking page address here — a button appears on the site.',
     portfolioNote:
       'The Portfolio block is assembled automatically from your published galleries — nothing to configure.',
+    optionsLegend: 'Options',
+    optBilingual: 'Bilingual site (Ukrainian + English)',
+    optBilingualHint:
+      'A UA/EN switcher appears on the site. Fill in the English texts below — pricing and contacts are shared.',
+    optLeadForm: 'Lead form',
+    optLeadFormHint:
+      'A "Leave a request" form appears in the contact block. Requests are collected at the bottom of this page.',
+    enLegend: 'English version',
+    enHeroTitle: 'Title in English',
+    enHeroSubtitle: 'Subtitle in English',
+    enAboutPlaceholder: 'About text in English',
+    leadsTitle: 'Site leads',
+    leadsEmpty: 'Nothing yet. When someone fills in the form on your site, it shows up here.',
     save: 'Save site',
   },
   publicSite: {
@@ -206,6 +219,13 @@ export const en: Dictionary = {
     contacts: 'Contacts',
     openGallery: 'View',
     book: 'Book a session',
+    leadTitle: 'Leave a request',
+    leadName: 'Your name',
+    leadContact: 'Phone or email',
+    leadMessage: 'A few words about the shoot (optional)',
+    leadSend: 'Send',
+    leadSent: 'Thank you! Your request was sent — the photographer will reach out.',
+    leadError: 'Could not send. Please try again.',
   },
   settings: {
     title: 'Profile settings',
