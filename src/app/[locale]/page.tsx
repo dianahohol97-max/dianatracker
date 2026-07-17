@@ -398,7 +398,7 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
           {t.final.cta} <span>→</span>
         </Link>
         <div className={s.giant} aria-hidden="true">
-          Прояв<i>.</i>
+          про<i>Я</i>в<i>.</i>
         </div>
       </section>
 

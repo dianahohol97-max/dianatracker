@@ -16,13 +16,23 @@ export function LogoMark({ size = 23 }: { size?: number }) {
   )
 }
 
+/**
+ * Wordmark: «проЯв» — the capital Я inside the word is the photographer's
+ * "я" surfacing, набране фірмовим синім.
+ */
+export function Wordmark({ textSize = 15 }: { textSize?: number }) {
+  return (
+    <b className="font-brand font-semibold tracking-[.01em]" style={{ fontSize: textSize }}>
+      про<span className="text-accent">Я</span>в
+    </b>
+  )
+}
+
 export function Logo({ size = 23, textSize = 15 }: { size?: number; textSize?: number }) {
   return (
     <span className="inline-flex items-center gap-[11px]">
       <LogoMark size={size} />
-      <b className="font-brand font-semibold tracking-[.01em]" style={{ fontSize: textSize }}>
-        Прояв
-      </b>
+      <Wordmark textSize={textSize} />
     </span>
   )
 }
