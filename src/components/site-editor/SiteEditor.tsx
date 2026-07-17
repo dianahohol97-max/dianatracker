@@ -1,8 +1,12 @@
 'use client'
 
-import { useMemo, useState, useTransition } from 'react'
+import { useEffect, useMemo, useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { deletePortfolioAsset } from '@/lib/actions/portfolio'
+import {
+  deletePortfolioAsset,
+  reorderPortfolio,
+  setPortfolioVisibility,
+} from '@/lib/actions/portfolio'
 import { generateImageVariants } from '@/lib/images/variants'
 import type { SiteContent } from '@/lib/site/content'
 import { THEME_CATALOG } from '@/lib/site/themes'
@@ -23,6 +27,11 @@ export interface EditorLabels {
   portfolioHint: string
   portfolioUpload: string
   portfolioUploading: string
+  portfolioManageHint: string
+  portfolioDragHint: string
+  portfolioHiddenBadge: string
+  portfolioShow: string
+  portfolioHide: string
   aboutLegend: string
   aboutPlaceholder: string
   pricingLegend: string
@@ -109,6 +118,40 @@ export function SiteEditor({
   const [bilingual, setBilingual] = useState(content.settings.bilingual)
   const [leadForm, setLeadForm] = useState(content.settings.leadForm)
   const [uploading, setUploading] = useState(0)
+
+  // Local, reorderable copy of the portfolio. Re-syncs when the server sends a
+  // fresh list (after upload/delete refresh); local edits below are optimistic.
+  const [items, setItems] = useState<PortfolioItem[]>(portfolio)
+  useEffect(() => {
+    setItems(portfolio)
+  }, [portfolio])
+  const dragIndex = useRef<number | null>(null)
+
+  const visiblePortfolio = useMemo(
+    () => items.filter((item) => item.visible !== false),
+    [items]
+  )
+
+  function moveItem(from: number, to: number) {
+    if (from === to || from < 0 || to < 0) return
+    const next = [...items]
+    const [moved] = next.splice(from, 1)
+    next.splice(to, 0, moved)
+    setItems(next)
+    startTransition(async () => {
+      await reorderPortfolio(locale, next.map((item) => item.id))
+    })
+  }
+
+  function toggleVisible(id: string) {
+    const target = items.find((item) => item.id === id)
+    if (!target) return
+    const nextVisible = target.visible === false
+    setItems(items.map((item) => (item.id === id ? { ...item, visible: nextVisible } : item)))
+    startTransition(async () => {
+      await setPortfolioVisibility(locale, id, nextVisible)
+    })
+  }
 
   const catalogEntry =
     THEME_CATALOG.find((entry) => entry.value === themeValue) ?? THEME_CATALOG[0]
@@ -273,35 +316,73 @@ export function SiteEditor({
               }}
             />
           </label>
-          {portfolio.length > 0 && (
-            <div className="grid grid-cols-4 gap-2">
-              {portfolio.map((item) => (
-                <span key={item.id} className="group relative block">
-                  <span
-                    className="block aspect-[4/5] rounded bg-line"
-                    style={
-                      item.previewUrl
-                        ? { background: `center / cover no-repeat url("${item.previewUrl}")` }
-                        : undefined
-                    }
-                  />
-                  <button
-                    type="button"
-                    aria-label={labels.delete}
-                    onClick={() =>
-                      startTransition(async () => {
-                        await deletePortfolioAsset(locale, item.id)
-                        router.refresh()
-                      })
-                    }
-                    disabled={pending}
-                    className="absolute right-1 top-1 hidden h-6 w-6 place-items-center rounded-full bg-white text-xs font-bold shadow group-hover:grid"
-                  >
-                    ✕
-                  </button>
-                </span>
-              ))}
-            </div>
+          {items.length > 0 && (
+            <>
+              <p className="text-xs leading-relaxed text-muted">{labels.portfolioManageHint}</p>
+              <div className="grid grid-cols-4 gap-2">
+                {items.map((item, index) => {
+                  const hidden = item.visible === false
+                  return (
+                    <span
+                      key={item.id}
+                      draggable
+                      onDragStart={() => {
+                        dragIndex.current = index
+                      }}
+                      onDragOver={(event) => event.preventDefault()}
+                      onDrop={(event) => {
+                        event.preventDefault()
+                        if (dragIndex.current !== null) moveItem(dragIndex.current, index)
+                        dragIndex.current = null
+                      }}
+                      className="group relative block cursor-grab active:cursor-grabbing"
+                      title={labels.portfolioDragHint}
+                    >
+                      <span
+                        className={`block aspect-[4/5] rounded bg-line transition-opacity ${
+                          hidden ? 'opacity-30' : ''
+                        }`}
+                        style={
+                          item.previewUrl
+                            ? { background: `center / cover no-repeat url("${item.previewUrl}")` }
+                            : undefined
+                        }
+                      />
+                      {hidden && (
+                        <span className="pointer-events-none absolute inset-x-0 bottom-1 text-center text-[10px] font-bold uppercase tracking-wide text-fg">
+                          {labels.portfolioHiddenBadge}
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        aria-label={hidden ? labels.portfolioShow : labels.portfolioHide}
+                        title={hidden ? labels.portfolioShow : labels.portfolioHide}
+                        onClick={() => toggleVisible(item.id)}
+                        disabled={pending}
+                        className="absolute left-1 top-1 hidden h-6 w-6 place-items-center rounded-full bg-white text-xs shadow group-hover:grid"
+                      >
+                        {hidden ? '🚫' : '👁'}
+                      </button>
+                      <button
+                        type="button"
+                        aria-label={labels.delete}
+                        onClick={() => {
+                          setItems((prev) => prev.filter((i) => i.id !== item.id))
+                          startTransition(async () => {
+                            await deletePortfolioAsset(locale, item.id)
+                            router.refresh()
+                          })
+                        }}
+                        disabled={pending}
+                        className="absolute right-1 top-1 hidden h-6 w-6 place-items-center rounded-full bg-white text-xs font-bold shadow group-hover:grid"
+                      >
+                        ✕
+                      </button>
+                    </span>
+                  )
+                })}
+              </div>
+            </>
           )}
         </fieldset>
 
@@ -455,7 +536,7 @@ export function SiteEditor({
               content={previewContent}
               displayName={displayName}
               logoUrl={logoUrl}
-              portfolio={portfolio}
+              portfolio={visiblePortfolio}
               labels={siteLabels}
               langSwitch={
                 bilingual ? { current: locale === 'en' ? 'en' : 'uk', hrefUk: '#', hrefEn: '#' } : undefined
