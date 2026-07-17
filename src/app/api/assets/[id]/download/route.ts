@@ -17,7 +17,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   // published, non-expired galleries only.
   const { data: asset } = await supabase
     .from('assets')
-    .select('id, r2_key, gallery_id, owner_id, galleries!inner(id, password_hash)')
+    .select('id, r2_key, gallery_id, owner_id')
     .eq('id', params.id)
     .single()
 
@@ -25,7 +25,19 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     return NextResponse.json({ error: 'not_found' }, { status: 404 })
   }
 
-  const gallery = Array.isArray(asset.galleries) ? asset.galleries[0] : asset.galleries
+  // Fetch the gallery separately rather than via an embedded join: there are
+  // two FK paths between assets and galleries (assets.gallery_id and
+  // galleries.cover_asset_id), so `galleries!inner(...)` is ambiguous and
+  // PostgREST refuses the embed.
+  const { data: gallery } = await supabase
+    .from('galleries')
+    .select('id, password_hash')
+    .eq('id', asset.gallery_id)
+    .single<{ id: string; password_hash: string | null }>()
+
+  if (!gallery) {
+    return NextResponse.json({ error: 'not_found' }, { status: 404 })
+  }
 
   const {
     data: { user },
