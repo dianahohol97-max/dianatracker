@@ -10,7 +10,8 @@ import {
   type SitePlanId,
 } from '@/lib/plans'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
-import { BillingPlans, buildGalleryCard, buildSiteCard } from '@/components/BillingPlans'
+import { BillingPlans } from '@/components/BillingPlans'
+import { buildGalleryCard, buildSiteCard } from '@/components/billing-cards'
 import {
   BillingSubscriptions,
   type SubscriptionView,
