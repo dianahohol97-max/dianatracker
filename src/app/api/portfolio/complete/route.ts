@@ -11,6 +11,7 @@ interface CompleteBody {
   width?: number
   height?: number
   variants?: Record<string, string>
+  category?: string
 }
 
 function isCompleteBody(value: unknown): value is CompleteBody {
@@ -29,6 +30,7 @@ function isCompleteBody(value: unknown): value is CompleteBody {
     typeof v.sizeBytes === 'number' &&
     (v.width === undefined || typeof v.width === 'number') &&
     (v.height === undefined || typeof v.height === 'number') &&
+    (v.category === undefined || typeof v.category === 'string') &&
     variantsOk
   )
 }
@@ -64,6 +66,7 @@ export async function POST(request: NextRequest) {
       height: body.height ?? null,
       size_bytes: body.sizeBytes,
       variants: body.variants ?? {},
+      category: body.category?.trim().slice(0, 60) || null,
     })
     .select('id')
     .single()
