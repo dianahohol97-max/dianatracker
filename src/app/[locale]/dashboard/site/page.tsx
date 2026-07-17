@@ -25,6 +25,7 @@ interface PortfolioRow {
   r2_key: string
   variants: Record<string, string>
   visible: boolean
+  category: string | null
 }
 
 export default async function SiteEditorPage({ params }: { params: { locale: string } }) {
@@ -52,7 +53,7 @@ export default async function SiteEditorPage({ params }: { params: { locale: str
         .single<{ display_name: string | null; logo_url: string | null }>(),
       supabase
         .from('portfolio_assets')
-        .select('id, r2_key, variants, visible')
+        .select('id, r2_key, variants, visible, category')
         .eq('owner_id', user.id)
         .order('position')
         .order('created_at')
@@ -77,6 +78,7 @@ export default async function SiteEditorPage({ params }: { params: { locale: str
         { expiresInSeconds: 60 * 60 }
       ),
       visible: row.visible,
+      category: row.category,
     }))
   )
 
@@ -156,6 +158,7 @@ export default async function SiteEditorPage({ params }: { params: { locale: str
           portfolioHiddenBadge: dict.site.portfolioHiddenBadge,
           portfolioShow: dict.site.portfolioShow,
           portfolioHide: dict.site.portfolioHide,
+          portfolioCategory: dict.site.portfolioCategory,
           aboutLegend: dict.site.aboutLegend,
           aboutPlaceholder: dict.site.aboutPlaceholder,
           pricingLegend: dict.site.pricingLegend,

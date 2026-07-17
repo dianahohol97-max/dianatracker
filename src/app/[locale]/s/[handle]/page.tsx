@@ -21,6 +21,7 @@ interface SiteRow {
 interface PortfolioRow {
   id: string
   preview_key: string | null
+  category: string | null
 }
 
 /**
@@ -91,6 +92,7 @@ export default async function PublicSitePage({
       previewUrl: row.preview_key
         ? await storage.getSignedReadUrl(row.preview_key, { expiresInSeconds: 60 * 60 })
         : null,
+      category: row.category,
     }))
   )
 

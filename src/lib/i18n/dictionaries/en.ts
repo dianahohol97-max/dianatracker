@@ -198,11 +198,12 @@ export const en: Dictionary = {
     portfolioNote:
       'The Portfolio block is assembled automatically from your published galleries — nothing to configure.',
     portfolioManageHint:
-      'Drag photos to reorder. The eye shows or hides a photo on the site. ✕ deletes it.',
+      'Drag photos to reorder. The eye shows or hides a photo. ✕ deletes it. Type a category under each photo ("Weddings", "Portraits"…) and the site groups work by it.',
     portfolioDragHint: 'Drag to reorder',
     portfolioHiddenBadge: 'hidden',
     portfolioShow: 'Show on site',
     portfolioHide: 'Hide from site',
+    portfolioCategory: 'Category',
     optionsLegend: 'Options',
     optBilingual: 'Bilingual site (Ukrainian + English)',
     optBilingualHint:

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import {
   deletePortfolioAsset,
   reorderPortfolio,
+  setPortfolioCategory,
   setPortfolioVisibility,
 } from '@/lib/actions/portfolio'
 import { generateImageVariants } from '@/lib/images/variants'
@@ -32,6 +33,7 @@ export interface EditorLabels {
   portfolioHiddenBadge: string
   portfolioShow: string
   portfolioHide: string
+  portfolioCategory: string
   aboutLegend: string
   aboutPlaceholder: string
   pricingLegend: string
@@ -152,6 +154,24 @@ export function SiteEditor({
       await setPortfolioVisibility(locale, id, nextVisible)
     })
   }
+
+  function updateCategory(id: string, category: string) {
+    setItems(items.map((item) => (item.id === id ? { ...item, category } : item)))
+  }
+  function persistCategory(id: string, category: string) {
+    startTransition(async () => {
+      await setPortfolioCategory(locale, id, category)
+    })
+  }
+
+  // Existing category names, for the quick-pick datalist.
+  const categoryOptions = Array.from(
+    new Set(
+      items
+        .map((item) => item.category?.trim())
+        .filter((value): value is string => !!value)
+    )
+  )
 
   const catalogEntry =
     THEME_CATALOG.find((entry) => entry.value === themeValue) ?? THEME_CATALOG[0]
@@ -323,65 +343,79 @@ export function SiteEditor({
                 {items.map((item, index) => {
                   const hidden = item.visible === false
                   return (
-                    <span
-                      key={item.id}
-                      draggable
-                      onDragStart={() => {
-                        dragIndex.current = index
-                      }}
-                      onDragOver={(event) => event.preventDefault()}
-                      onDrop={(event) => {
-                        event.preventDefault()
-                        if (dragIndex.current !== null) moveItem(dragIndex.current, index)
-                        dragIndex.current = null
-                      }}
-                      className="group relative block cursor-grab active:cursor-grabbing"
-                      title={labels.portfolioDragHint}
-                    >
+                    <div key={item.id} className="flex flex-col gap-1">
                       <span
-                        className={`block aspect-[4/5] rounded bg-line transition-opacity ${
-                          hidden ? 'opacity-30' : ''
-                        }`}
-                        style={
-                          item.previewUrl
-                            ? { background: `center / cover no-repeat url("${item.previewUrl}")` }
-                            : undefined
-                        }
-                      />
-                      {hidden && (
-                        <span className="pointer-events-none absolute inset-x-0 bottom-1 text-center text-[10px] font-bold uppercase tracking-wide text-fg">
-                          {labels.portfolioHiddenBadge}
-                        </span>
-                      )}
-                      <button
-                        type="button"
-                        aria-label={hidden ? labels.portfolioShow : labels.portfolioHide}
-                        title={hidden ? labels.portfolioShow : labels.portfolioHide}
-                        onClick={() => toggleVisible(item.id)}
-                        disabled={pending}
-                        className="absolute left-1 top-1 hidden h-6 w-6 place-items-center rounded-full bg-white text-xs shadow group-hover:grid"
-                      >
-                        {hidden ? '🚫' : '👁'}
-                      </button>
-                      <button
-                        type="button"
-                        aria-label={labels.delete}
-                        onClick={() => {
-                          setItems((prev) => prev.filter((i) => i.id !== item.id))
-                          startTransition(async () => {
-                            await deletePortfolioAsset(locale, item.id)
-                            router.refresh()
-                          })
+                        draggable
+                        onDragStart={() => {
+                          dragIndex.current = index
                         }}
-                        disabled={pending}
-                        className="absolute right-1 top-1 hidden h-6 w-6 place-items-center rounded-full bg-white text-xs font-bold shadow group-hover:grid"
+                        onDragOver={(event) => event.preventDefault()}
+                        onDrop={(event) => {
+                          event.preventDefault()
+                          if (dragIndex.current !== null) moveItem(dragIndex.current, index)
+                          dragIndex.current = null
+                        }}
+                        className="group relative block cursor-grab active:cursor-grabbing"
+                        title={labels.portfolioDragHint}
                       >
-                        ✕
-                      </button>
-                    </span>
+                        <span
+                          className={`block aspect-[4/5] rounded bg-line transition-opacity ${
+                            hidden ? 'opacity-30' : ''
+                          }`}
+                          style={
+                            item.previewUrl
+                              ? { background: `center / cover no-repeat url("${item.previewUrl}")` }
+                              : undefined
+                          }
+                        />
+                        {hidden && (
+                          <span className="pointer-events-none absolute inset-x-0 bottom-1 text-center text-[10px] font-bold uppercase tracking-wide text-fg">
+                            {labels.portfolioHiddenBadge}
+                          </span>
+                        )}
+                        <button
+                          type="button"
+                          aria-label={hidden ? labels.portfolioShow : labels.portfolioHide}
+                          title={hidden ? labels.portfolioShow : labels.portfolioHide}
+                          onClick={() => toggleVisible(item.id)}
+                          disabled={pending}
+                          className="absolute left-1 top-1 hidden h-6 w-6 place-items-center rounded-full bg-white text-xs shadow group-hover:grid"
+                        >
+                          {hidden ? '🚫' : '👁'}
+                        </button>
+                        <button
+                          type="button"
+                          aria-label={labels.delete}
+                          onClick={() => {
+                            setItems((prev) => prev.filter((i) => i.id !== item.id))
+                            startTransition(async () => {
+                              await deletePortfolioAsset(locale, item.id)
+                              router.refresh()
+                            })
+                          }}
+                          disabled={pending}
+                          className="absolute right-1 top-1 hidden h-6 w-6 place-items-center rounded-full bg-white text-xs font-bold shadow group-hover:grid"
+                        >
+                          ✕
+                        </button>
+                      </span>
+                      <input
+                        list="portfolio-cats"
+                        value={item.category ?? ''}
+                        placeholder={labels.portfolioCategory}
+                        onChange={(event) => updateCategory(item.id, event.target.value)}
+                        onBlur={(event) => persistCategory(item.id, event.target.value)}
+                        className="w-full border border-line bg-transparent px-2 py-1 text-[11px] outline-none focus:border-fg"
+                      />
+                    </div>
                   )
                 })}
               </div>
+              <datalist id="portfolio-cats">
+                {categoryOptions.map((cat) => (
+                  <option key={cat} value={cat} />
+                ))}
+              </datalist>
             </>
           )}
         </fieldset>
