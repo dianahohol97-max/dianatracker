@@ -34,8 +34,8 @@
 /* nav */
 .nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; }
 .navLinks { display: flex; gap: 28px; align-items: center; }
-.navLinks a { color: var(--color-muted); text-decoration: none; font-size: 14px; font-weight: 600; }
-.navLinks a:hover { color: var(--color-fg); }
+.navLinks a:not(.pill):not(.pillHot) { color: var(--color-muted); text-decoration: none; font-size: 14px; font-weight: 600; }
+.navLinks a:not(.pill):not(.pillHot):hover { color: var(--color-fg); }
 .pill {
   display: inline-flex; align-items: center; gap: 10px;
   background: var(--color-fg); color: #fff; border-radius: 999px;
