@@ -67,7 +67,7 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
   const login = `/${locale}/login`
   const jsonLd = buildJsonLd(locale, t)
 
-  const marqueeTiles = ['g1 t34', 'g4 t43', 'g2 t11', 'g5 t34', 'g3 t43', 'g1 t11', 'g2 t34', 'g4 t43']
+  const marqueeTiles = ['p01 t34', 'p08 t43', 'p07 t11', 'p14 t34', 'p15 t43', 'p16 t11', 'p12 t34', 'p03 t43']
   const tile = (spec: string, key: number) => {
     const [g, t_] = spec.split(' ')
     return <div key={key} className={`${s.ph} ${s[g]} ${s[t_]}`} />
@@ -121,10 +121,10 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
           <div className={s.stage} aria-hidden="true">
             <div className={s.mockGallery}>
               <div className={s.mockGrid}>
-                <div className={`${s.ph} ${s.g1}`} />
-                <div className={`${s.ph} ${s.g3}`} />
-                <div className={`${s.ph} ${s.g4}`} />
-                <div className={`${s.ph} ${s.g2}`} />
+                <div className={`${s.ph} ${s.p01}`} />
+                <div className={`${s.ph} ${s.p05}`} />
+                <div className={`${s.ph} ${s.p03}`} />
+                <div className={`${s.ph} ${s.p11}`} />
               </div>
               <span className={s.heart}>♥</span>
             </div>
@@ -150,9 +150,9 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
               <div className={s.wm}>{t.hero.mockName}</div>
               <div className={s.hl}>{t.hero.mockTitle}</div>
               <div className={s.themeRow}>
-                <div className={`${s.ph} ${s.g2}`} />
-                <div className={`${s.ph} ${s.g5}`} />
-                <div className={`${s.ph} ${s.g3}`} />
+                <div className={`${s.ph} ${s.p02}`} />
+                <div className={`${s.ph} ${s.p13}`} />
+                <div className={`${s.ph} ${s.p10}`} />
               </div>
             </div>
           </div>
@@ -185,10 +185,10 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
               <div className={s.prod}>
                 <span className={s.prodNo}>{t.products.items[0].no}</span>
                 <div className={s.pGal}>
-                  <div className={`${s.ph} ${s.g1}`} />
-                  <div className={`${s.ph} ${s.g3}`} />
-                  <div className={`${s.ph} ${s.g4}`} />
-                  <div className={`${s.ph} ${s.g2}`} />
+                  <div className={`${s.ph} ${s.p15}`} />
+                  <div className={`${s.ph} ${s.p06}`} />
+                  <div className={`${s.ph} ${s.p08}`} />
+                  <div className={`${s.ph} ${s.p12}`} />
                 </div>
                 <h3>{t.products.items[0].title}</h3>
                 <p>{t.products.items[0].text}</p>
@@ -205,9 +205,9 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
                   <div className={s.wm}>{t.hero.mockName}</div>
                   <div className={s.hl}>{t.hero.mockTitle}</div>
                   <div className={s.themeRow}>
-                    <div className={`${s.ph} ${s.g2}`} />
-                    <div className={`${s.ph} ${s.g4}`} />
-                    <div className={`${s.ph} ${s.g1}`} />
+                    <div className={`${s.ph} ${s.p09}`} />
+                    <div className={`${s.ph} ${s.p14}`} />
+                    <div className={`${s.ph} ${s.p04}`} />
                   </div>
                 </div>
                 <h3>{t.products.items[1].title}</h3>
@@ -260,7 +260,7 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
               <h4>{t.bento.cards.selection.text}</h4>
             </div>
             <div className={s.b}>
-              <div className={`${s.ph} ${s.g3} ${s.bPhoto}`} />
+              <div className={`${s.ph} ${s.p06} ${s.bPhoto}`} />
               <div className={s.over}>
                 <span className={s.lbl}>{t.bento.cards.galleryPhoto}</span>
               </div>
@@ -292,7 +292,7 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
               </div>
             </div>
             <div className={s.b}>
-              <div className={`${s.ph} ${s.g5} ${s.bPhoto}`} />
+              <div className={`${s.ph} ${s.p11} ${s.bPhoto}`} />
               <div className={s.over}>
                 <span className={s.lbl}>{t.bento.cards.previewPhoto}</span>
               </div>
