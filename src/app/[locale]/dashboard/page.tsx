@@ -2,16 +2,17 @@ import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { getDictionary } from '@/lib/i18n'
 import { isLocale } from '@/lib/i18n/config'
+import { effectiveGalleryPlan } from '@/lib/plans'
+import { getStorage } from '@/lib/storage'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
-import { signOut } from '@/lib/actions/galleries'
-import type { Gallery, Profile } from '@/lib/types'
+import type { Gallery } from '@/lib/types'
 
 export const dynamic = 'force-dynamic'
 
-function formatBytes(bytes: number): string {
-  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`
-  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
-  return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`
+interface CoverRow {
+  id: string
+  r2_key: string
+  variants: Record<string, string>
 }
 
 export default async function DashboardPage({ params }: { params: { locale: string } }) {
@@ -25,89 +26,107 @@ export default async function DashboardPage({ params }: { params: { locale: stri
   } = await supabase.auth.getUser()
   if (!user) redirect(`/${locale}/login`)
 
-  const [{ data: galleries }, { data: profile }] = await Promise.all([
+  const [{ data: galleries }, { data: planRow }] = await Promise.all([
     supabase
       .from('galleries')
       .select('*')
       .order('created_at', { ascending: false })
       .returns<Gallery[]>(),
-    supabase.from('profiles').select('*').eq('user_id', user.id).single<Profile>(),
+    supabase
+      .from('profiles')
+      .select('plan, grace_until')
+      .eq('user_id', user.id)
+      .single<{ plan: string; grace_until: string | null }>(),
   ])
+  const ownerPlan = effectiveGalleryPlan(planRow?.plan ?? 'free', planRow?.grace_until)
 
-  const signOutWithLocale = signOut.bind(null, locale)
+  // Card data: cover thumb + photo count per gallery (fine at dashboard scale).
+  const storage = getStorage()
+  const cards = await Promise.all(
+    (galleries ?? []).map(async (gallery) => {
+      const coverQuery = gallery.cover_asset_id
+        ? supabase
+            .from('assets')
+            .select('id, r2_key, variants')
+            .eq('id', gallery.cover_asset_id)
+            .maybeSingle<CoverRow>()
+        : supabase
+            .from('assets')
+            .select('id, r2_key, variants')
+            .eq('gallery_id', gallery.id)
+            .order('position')
+            .order('created_at')
+            .limit(1)
+            .maybeSingle<CoverRow>()
+      const [{ data: cover }, { count: photoCount }] = await Promise.all([
+        coverQuery,
+        supabase
+          .from('assets')
+          .select('*', { count: 'exact', head: true })
+          .eq('gallery_id', gallery.id),
+      ])
+      const coverUrl = cover
+        ? await storage.getSignedReadUrl(cover.variants.thumb ?? cover.variants.preview ?? cover.r2_key, {
+            expiresInSeconds: 60 * 60,
+          })
+        : null
+      return { gallery, coverUrl, photoCount: photoCount ?? 0 }
+    })
+  )
 
   return (
-    <main className="mx-auto max-w-5xl px-6 py-16">
-      <header className="flex items-baseline justify-between border-b border-line pb-8">
-        <h1 className="font-display text-4xl">{dict.dashboard.title}</h1>
-        <div className="flex items-center gap-6">
-          {profile && (
-            <span className="text-sm text-muted">
-              {dict.dashboard.storageUsed}: {formatBytes(profile.storage_used_bytes)} /{' '}
-              {formatBytes(profile.storage_limit_bytes)}
-            </span>
-          )}
-          <Link
-            href={`/${locale}/dashboard/site`}
-            className="text-sm text-muted underline hover:text-fg"
-          >
-            {dict.site.navLink}
-          </Link>
-          <Link
-            href={`/${locale}/dashboard/booking`}
-            className="text-sm text-muted underline hover:text-fg"
-          >
-            {dict.booking.navLink}
-          </Link>
-          <Link
-            href={`/${locale}/dashboard/billing`}
-            className="text-sm text-muted underline hover:text-fg"
-          >
-            {dict.dashboard.billingLink}
-          </Link>
-          <Link
-            href={`/${locale}/dashboard/settings`}
-            className="text-sm text-muted underline hover:text-fg"
-          >
-            {dict.dashboard.settingsLink}
-          </Link>
-          <form action={signOutWithLocale}>
-            <button type="submit" className="text-sm text-muted underline hover:text-fg">
-              {dict.common.signOut}
-            </button>
-          </form>
-        </div>
-      </header>
-
-      <div className="mt-10">
+    <main className="mx-auto max-w-6xl px-6 py-12">
+      <header className="mb-8 flex flex-wrap items-center gap-4">
+        <h1 className="font-brand text-3xl">{dict.dashboard.title}</h1>
         <Link
           href={`/${locale}/dashboard/galleries/new`}
-          className="inline-block border border-fg px-8 py-3 text-sm uppercase tracking-widest transition-colors hover:bg-fg hover:text-bg"
+          className="ml-auto rounded-full bg-accent px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-accent-deep"
         >
-          {dict.dashboard.newGallery}
+          + {dict.dashboard.newGallery}
         </Link>
-      </div>
+      </header>
 
-      {!galleries || galleries.length === 0 ? (
-        <p className="mt-16 max-w-xl leading-relaxed text-muted">{dict.dashboard.empty}</p>
+      {cards.length === 0 ? (
+        <p className="mt-12 max-w-xl leading-relaxed text-muted">{dict.dashboard.empty}</p>
       ) : (
-        <ul className="mt-12 divide-y divide-line">
-          {galleries.map((gallery) => (
-            <li key={gallery.id}>
-              <Link
-                href={`/${locale}/dashboard/galleries/${gallery.id}`}
-                className="flex items-baseline justify-between py-6 transition-colors hover:text-accent"
-              >
-                <span className="font-display text-2xl">{gallery.title}</span>
-                <span className="text-sm text-muted">
-                  {gallery.is_published ? dict.dashboard.published : dict.dashboard.draft}
-                  {' · '}
-                  {dict.dashboard.views}: {gallery.view_count}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {cards.map(({ gallery, coverUrl, photoCount }) => (
+            <Link
+              key={gallery.id}
+              href={`/${locale}/dashboard/galleries/${gallery.id}`}
+              className="group rounded-2xl bg-white p-3 no-underline shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
+            >
+              <span
+                className="block aspect-[4/2.6] rounded-xl bg-line bg-cover bg-center"
+                style={coverUrl ? { backgroundImage: `url("${coverUrl}")` } : undefined}
+              />
+              <span className="mt-3 block px-1 pb-1">
+                <span className="block truncate text-[15px] font-extrabold text-fg">
+                  {gallery.title}
                 </span>
-              </Link>
-            </li>
+                <span className="mt-1.5 flex flex-wrap items-center gap-2 text-xs font-semibold text-muted">
+                  <span
+                    className={`rounded-full px-2.5 py-0.5 font-extrabold ${
+                      gallery.is_published
+                        ? 'bg-emerald-600/10 text-emerald-700'
+                        : 'bg-bg text-muted'
+                    }`}
+                  >
+                    {gallery.is_published ? dict.dashboard.published : dict.dashboard.draft}
+                  </span>
+                  <span>
+                    {photoCount} {dict.dashboard.photosCount.toLowerCase()}
+                  </span>
+                  {ownerPlan.features.stats && (
+                    <span>
+                      · {gallery.view_count} {dict.dashboard.views.toLowerCase()}
+                    </span>
+                  )}
+                </span>
+              </span>
+            </Link>
           ))}
-        </ul>
+        </div>
       )}
     </main>
   )
