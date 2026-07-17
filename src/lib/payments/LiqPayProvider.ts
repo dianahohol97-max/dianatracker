@@ -18,6 +18,7 @@ const CHECKOUT_URL = 'https://www.liqpay.ua/api/3/checkout'
  */
 export class LiqPayProvider implements PaymentProvider {
   readonly name = 'liqpay'
+  readonly recurring = true
 
   constructor(
     private readonly publicKey: string,
@@ -30,7 +31,7 @@ export class LiqPayProvider implements PaymentProvider {
       .digest('base64')
   }
 
-  createCheckoutForm(request: CheckoutRequest): CheckoutForm {
+  async createCheckoutForm(request: CheckoutRequest): Promise<CheckoutForm> {
     const params = {
       version: 3,
       public_key: this.publicKey,
@@ -53,9 +54,14 @@ export class LiqPayProvider implements PaymentProvider {
     }
   }
 
-  parseWebhook(params: Record<string, string>): WebhookEvent | null {
-    const data = params.data
-    const signature = params.signature
+  async parseWebhook(
+    rawBody: string,
+    _headers: Record<string, string>
+  ): Promise<WebhookEvent | null> {
+    // LiqPay posts application/x-www-form-urlencoded: data + signature.
+    const params = new URLSearchParams(rawBody)
+    const data = params.get('data')
+    const signature = params.get('signature')
     if (!data || !signature || this.sign(data) !== signature) return null
 
     let payload: Record<string, unknown>

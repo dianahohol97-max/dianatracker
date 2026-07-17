@@ -1,5 +1,9 @@
 import { LiqPayProvider } from './LiqPayProvider'
+import { MonobankProvider } from './MonobankProvider'
 import type { PaymentProvider } from './PaymentProvider'
+
+export { canChargeTokens } from './PaymentProvider'
+export type { RecurringChargeProvider, TokenChargeRequest } from './PaymentProvider'
 
 let cached: PaymentProvider | null = null
 
@@ -17,6 +21,12 @@ export function getPayments(): PaymentProvider | null {
       const privateKey = process.env.LIQPAY_PRIVATE_KEY
       if (!publicKey || !privateKey) return null
       cached = new LiqPayProvider(publicKey, privateKey)
+      return cached
+    }
+    case 'monobank': {
+      const token = process.env.MONOBANK_TOKEN
+      if (!token) return null
+      cached = new MonobankProvider(token)
       return cached
     }
     default:

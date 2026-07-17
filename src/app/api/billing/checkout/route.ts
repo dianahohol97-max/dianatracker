@@ -105,16 +105,22 @@ export async function POST(request: NextRequest) {
   }
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? new URL(request.url).origin
-  const form = payments.createCheckoutForm({
-    orderId,
-    amount,
-    currency: 'UAH',
-    description,
-    period: body.period,
-    resultUrl: `${appUrl}/${locale}/dashboard/billing`,
-    serverUrl: `${appUrl}/api/billing/webhook`,
-    language: locale,
-  })
-
-  return NextResponse.json(form)
+  try {
+    const form = await payments.createCheckoutForm({
+      orderId,
+      amount,
+      currency: 'UAH',
+      description,
+      period: body.period,
+      resultUrl: `${appUrl}/${locale}/dashboard/billing`,
+      serverUrl: `${appUrl}/api/billing/webhook`,
+      language: locale,
+      customerId: user.id,
+    })
+    return NextResponse.json(form)
+  } catch (cause) {
+    // Monobank creates the invoice via a server call that can fail.
+    console.error('billing checkout: provider error', cause)
+    return NextResponse.json({ error: 'provider_error' }, { status: 502 })
+  }
 }
