@@ -278,7 +278,7 @@ const en: LandingCopy = {
     cta: 'Start for free',
     ctaNote: '3 GB free forever. No card at sign-up.',
     statNumber: '120 000',
-    statText: 'photos delivered to clients through Proyav galleries',
+    statText: 'photos delivered to clients through Proiav galleries',
     slotPay: 'Pay the photographer',
     mockName: 'Olena Romaniuk',
     mockTitle: 'Wedding stories',
@@ -425,8 +425,8 @@ const en: LandingCopy = {
     title: 'The important bits, briefly',
     items: [
       {
-        q: 'Do clients see the gallery is made on Proyav?',
-        a: 'On the free tier a small “Made with Proyav” note sits at the bottom of the gallery. From Basic up it is gone: pages carry only your name, your logo and your photos.',
+        q: 'Do clients see the gallery is made on Proiav?',
+        a: 'On the free tier a small “Made with Proiav” note sits at the bottom of the gallery. From Basic up it is gone: pages carry only your name, your logo and your photos.',
       },
       {
         q: 'Who do shoot payments go through?',

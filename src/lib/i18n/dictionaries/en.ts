@@ -265,7 +265,7 @@ export const en: Dictionary = {
     favoriteToggle: 'Add to favorites',
     selected: 'selected',
     scrollHint: 'scroll ↓',
-    madeOn: 'Made with Proyav',
+    madeOn: 'Made with Proiav',
     tip: 'Thank the photographer',
     notFound: 'Gallery not found. The link may have expired or the gallery is not published yet.',
   },

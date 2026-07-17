@@ -11,7 +11,7 @@
    локально `npx supabase link && npx supabase db push`, або встав вміст
    кожного файла в SQL Editor у дашборді.
 3. Auth → URL Configuration → додай Redirect URLs:
-   `https://ТВІЙ-ДОМЕН/auth/callback` (і `http://localhost:3000/auth/callback`).
+   `https://proiav.space/auth/callback` (і `http://localhost:3000/auth/callback`).
 4. Скопіюй: Project URL, anon key, service_role key (Settings → API).
 
 ## 2. Cloudflare R2 (обов'язково)
@@ -23,7 +23,7 @@
 ```json
 [
   {
-    "AllowedOrigins": ["http://localhost:3000", "https://ТВІЙ-ДОМЕН"],
+    "AllowedOrigins": ["http://localhost:3000", "https://proiav.space"],
     "AllowedMethods": ["PUT", "GET"],
     "AllowedHeaders": ["content-type"],
     "ExposeHeaders": ["etag"],
@@ -44,7 +44,7 @@
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase → API |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase → API |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase → API (секрет!) |
-| `NEXT_PUBLIC_APP_URL` | `https://ТВІЙ-ДОМЕН` — від нього будується SEO і посилання |
+| `NEXT_PUBLIC_APP_URL` | `https://proiav.space` — від нього будується SEO і посилання |
 | `GALLERY_UNLOCK_SECRET` | будь-який довгий випадковий рядок |
 | `STORAGE_PROVIDER` | `r2` |
 | `R2_ACCOUNT_ID` / `R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY` / `R2_BUCKET` | Cloudflare R2 |
@@ -57,13 +57,13 @@
 
 1. Google Search Console → додай домен → скопіюй код верифікації →
    env `GOOGLE_SITE_VERIFICATION` → redeploy → підтверди.
-2. Надішли sitemap: `https://ТВІЙ-ДОМЕН/sitemap.xml`.
+2. Надішли sitemap: `https://proiav.space/sitemap.xml`.
 
 ## 5. Оплати підписок — LiqPay (коли готова брати гроші)
 
 1. Зареєструй мерчанта LiqPay (ФОП), отримай public/private ключі.
 2. Env: `PAYMENT_PROVIDER=liqpay`, `LIQPAY_PUBLIC_KEY`, `LIQPAY_PRIVATE_KEY`.
-3. У кабінеті LiqPay вкажи server URL: `https://ТВІЙ-ДОМЕН/api/billing/webhook`.
+3. У кабінеті LiqPay вкажи server URL: `https://proiav.space/api/billing/webhook`.
    До цього моменту сторінка тарифів чемно пише «оплати ще не підключені».
 
 ## 6. Пошта для бронювань (опційно)
