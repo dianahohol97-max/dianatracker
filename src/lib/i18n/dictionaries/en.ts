@@ -75,6 +75,7 @@ export const en: Dictionary = {
     styleLabel: 'Gallery style',
     styleInherit: 'Same as the site',
     styleSave: 'Save style',
+    styleSaved: 'Saved',
     setCover: 'Set cover',
     coverBadge: 'Cover ✓',
     favoritesTitle: 'Client favorites',

@@ -82,6 +82,7 @@ export const uk = {
     styleLabel: 'Стиль галереї',
     styleInherit: 'Як на сайті',
     styleSave: 'Зберегти стиль',
+    styleSaved: 'Збережено',
     setCover: 'Обкладинка',
     coverBadge: 'Обкладинка ✓',
     favoritesTitle: 'Обране клієнта',

@@ -13,6 +13,7 @@ import { getStorage } from '@/lib/storage'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { CopyLinkButton } from '@/components/CopyLinkButton'
 import { ExportFavoritesButton } from '@/components/ExportFavoritesButton'
+import { GalleryStyleForm } from '@/components/gallery/GalleryStyleForm'
 import { Uploader } from '@/components/Uploader'
 import type { Asset, Gallery } from '@/lib/types'
 
@@ -171,26 +172,16 @@ export default async function ManageGalleryPage({
           </p>
         )}
 
-        <form action={themeAction} className="mt-6 flex flex-wrap items-center gap-3">
-          <label className="text-sm text-muted" htmlFor="gallery-theme">
-            {dict.galleryManage.styleLabel}
-          </label>
-          <select
-            id="gallery-theme"
-            name="theme"
-            defaultValue={gallery.theme ?? ''}
-            className="border border-line bg-transparent px-3 py-2 text-sm outline-none focus:border-fg"
-          >
-            {themeOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-          <button type="submit" className="text-sm underline hover:text-accent">
-            {dict.galleryManage.styleSave}
-          </button>
-        </form>
+        <GalleryStyleForm
+          action={themeAction}
+          options={themeOptions}
+          defaultValue={gallery.theme ?? ''}
+          labels={{
+            styleLabel: dict.galleryManage.styleLabel,
+            styleSave: dict.galleryManage.styleSave,
+            styleSaved: dict.galleryManage.styleSaved,
+          }}
+        />
       </header>
 
       <section className="mt-12">
