@@ -11,7 +11,12 @@ import {
 import { generateImageVariants } from '@/lib/images/variants'
 import type { SiteContent } from '@/lib/site/content'
 import { THEME_CATALOG } from '@/lib/site/themes'
-import { SiteRenderer, type PortfolioItem, type SiteLabels } from '@/components/site/SiteRenderer'
+import {
+  groupPortfolio,
+  SiteRenderer,
+  type PortfolioItem,
+  type SiteLabels,
+} from '@/components/site/SiteRenderer'
 import type { LeadFormLabels } from '@/components/site/LeadForm'
 import type { Locale } from '@/lib/i18n/config'
 
@@ -34,6 +39,9 @@ export interface EditorLabels {
   portfolioShow: string
   portfolioHide: string
   portfolioCategory: string
+  portfolioUploadTo: string
+  portfolioCategoryEg: string
+  portfolioUncategorized: string
   aboutLegend: string
   aboutPlaceholder: string
   pricingLegend: string
@@ -120,6 +128,8 @@ export function SiteEditor({
   const [bilingual, setBilingual] = useState(content.settings.bilingual)
   const [leadForm, setLeadForm] = useState(content.settings.leadForm)
   const [uploading, setUploading] = useState(0)
+  // Category new uploads are dropped into (photographers add a shoot at a time).
+  const [uploadCategory, setUploadCategory] = useState('')
 
   // Local, reorderable copy of the portfolio. Re-syncs when the server sends a
   // fresh list (after upload/delete refresh); local edits below are optimistic.
@@ -259,6 +269,7 @@ export function SiteEditor({
             width,
             height,
             variants,
+            category: uploadCategory.trim() || undefined,
           }),
         })
       } catch {
@@ -322,8 +333,26 @@ export function SiteEditor({
         <fieldset className="flex flex-col gap-3 rounded border border-line p-5">
           <legend className="px-2 text-sm text-muted">{labels.portfolioLegend}</legend>
           <p className="text-xs leading-relaxed text-muted">{labels.portfolioHint}</p>
+          {/* Upload a shoot straight into a category */}
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-muted" htmlFor="se-upload-cat">
+              {labels.portfolioUploadTo}
+            </label>
+            <input
+              id="se-upload-cat"
+              list="portfolio-cats"
+              value={uploadCategory}
+              placeholder={labels.portfolioCategoryEg}
+              onChange={(event) => setUploadCategory(event.target.value)}
+              className={inputClass}
+            />
+          </div>
           <label className="cursor-pointer rounded border-2 border-dashed border-line px-4 py-6 text-center text-sm text-muted transition-colors hover:border-accent hover:text-accent">
-            {uploading > 0 ? `${labels.portfolioUploading} ${uploading}…` : labels.portfolioUpload}
+            {uploading > 0
+              ? `${labels.portfolioUploading} ${uploading}…`
+              : uploadCategory.trim()
+                ? `${labels.portfolioUpload} → ${uploadCategory.trim()}`
+                : labels.portfolioUpload}
             <input
               type="file"
               multiple
@@ -339,78 +368,88 @@ export function SiteEditor({
           {items.length > 0 && (
             <>
               <p className="text-xs leading-relaxed text-muted">{labels.portfolioManageHint}</p>
-              <div className="grid grid-cols-4 gap-2">
-                {items.map((item, index) => {
-                  const hidden = item.visible === false
-                  return (
-                    <div key={item.id} className="flex flex-col gap-1">
-                      <span
-                        draggable
-                        onDragStart={() => {
-                          dragIndex.current = index
-                        }}
-                        onDragOver={(event) => event.preventDefault()}
-                        onDrop={(event) => {
-                          event.preventDefault()
-                          if (dragIndex.current !== null) moveItem(dragIndex.current, index)
-                          dragIndex.current = null
-                        }}
-                        className="group relative block cursor-grab active:cursor-grabbing"
-                        title={labels.portfolioDragHint}
-                      >
-                        <span
-                          className={`block aspect-[4/5] rounded bg-line transition-opacity ${
-                            hidden ? 'opacity-30' : ''
-                          }`}
-                          style={
-                            item.previewUrl
-                              ? { background: `center / cover no-repeat url("${item.previewUrl}")` }
-                              : undefined
-                          }
-                        />
-                        {hidden && (
-                          <span className="pointer-events-none absolute inset-x-0 bottom-1 text-center text-[10px] font-bold uppercase tracking-wide text-fg">
-                            {labels.portfolioHiddenBadge}
+              {groupPortfolio(items).map((group) => (
+                <div key={group.category ?? '_'} className="flex flex-col gap-2">
+                  <p className="text-xs font-bold uppercase tracking-wide text-muted">
+                    {group.category ?? labels.portfolioUncategorized} · {group.items.length}
+                  </p>
+                  <div className="grid grid-cols-4 gap-2">
+                    {group.items.map((item) => {
+                      const index = items.findIndex((i) => i.id === item.id)
+                      const hidden = item.visible === false
+                      return (
+                        <div key={item.id} className="flex flex-col gap-1">
+                          <span
+                            draggable
+                            onDragStart={() => {
+                              dragIndex.current = index
+                            }}
+                            onDragOver={(event) => event.preventDefault()}
+                            onDrop={(event) => {
+                              event.preventDefault()
+                              if (dragIndex.current !== null) moveItem(dragIndex.current, index)
+                              dragIndex.current = null
+                            }}
+                            className="group relative block cursor-grab active:cursor-grabbing"
+                            title={labels.portfolioDragHint}
+                          >
+                            <span
+                              className={`block aspect-[4/5] rounded bg-line transition-opacity ${
+                                hidden ? 'opacity-30' : ''
+                              }`}
+                              style={
+                                item.previewUrl
+                                  ? {
+                                      background: `center / cover no-repeat url("${item.previewUrl}")`,
+                                    }
+                                  : undefined
+                              }
+                            />
+                            {hidden && (
+                              <span className="pointer-events-none absolute inset-x-0 bottom-1 text-center text-[10px] font-bold uppercase tracking-wide text-fg">
+                                {labels.portfolioHiddenBadge}
+                              </span>
+                            )}
+                            <button
+                              type="button"
+                              aria-label={hidden ? labels.portfolioShow : labels.portfolioHide}
+                              title={hidden ? labels.portfolioShow : labels.portfolioHide}
+                              onClick={() => toggleVisible(item.id)}
+                              disabled={pending}
+                              className="absolute left-1 top-1 hidden h-6 w-6 place-items-center rounded-full bg-white text-xs shadow group-hover:grid"
+                            >
+                              {hidden ? '🚫' : '👁'}
+                            </button>
+                            <button
+                              type="button"
+                              aria-label={labels.delete}
+                              onClick={() => {
+                                setItems((prev) => prev.filter((i) => i.id !== item.id))
+                                startTransition(async () => {
+                                  await deletePortfolioAsset(locale, item.id)
+                                  router.refresh()
+                                })
+                              }}
+                              disabled={pending}
+                              className="absolute right-1 top-1 hidden h-6 w-6 place-items-center rounded-full bg-white text-xs font-bold shadow group-hover:grid"
+                            >
+                              ✕
+                            </button>
                           </span>
-                        )}
-                        <button
-                          type="button"
-                          aria-label={hidden ? labels.portfolioShow : labels.portfolioHide}
-                          title={hidden ? labels.portfolioShow : labels.portfolioHide}
-                          onClick={() => toggleVisible(item.id)}
-                          disabled={pending}
-                          className="absolute left-1 top-1 hidden h-6 w-6 place-items-center rounded-full bg-white text-xs shadow group-hover:grid"
-                        >
-                          {hidden ? '🚫' : '👁'}
-                        </button>
-                        <button
-                          type="button"
-                          aria-label={labels.delete}
-                          onClick={() => {
-                            setItems((prev) => prev.filter((i) => i.id !== item.id))
-                            startTransition(async () => {
-                              await deletePortfolioAsset(locale, item.id)
-                              router.refresh()
-                            })
-                          }}
-                          disabled={pending}
-                          className="absolute right-1 top-1 hidden h-6 w-6 place-items-center rounded-full bg-white text-xs font-bold shadow group-hover:grid"
-                        >
-                          ✕
-                        </button>
-                      </span>
-                      <input
-                        list="portfolio-cats"
-                        value={item.category ?? ''}
-                        placeholder={labels.portfolioCategory}
-                        onChange={(event) => updateCategory(item.id, event.target.value)}
-                        onBlur={(event) => persistCategory(item.id, event.target.value)}
-                        className="w-full border border-line bg-transparent px-2 py-1 text-[11px] outline-none focus:border-fg"
-                      />
-                    </div>
-                  )
-                })}
-              </div>
+                          <input
+                            list="portfolio-cats"
+                            value={item.category ?? ''}
+                            placeholder={labels.portfolioCategory}
+                            onChange={(event) => updateCategory(item.id, event.target.value)}
+                            onBlur={(event) => persistCategory(item.id, event.target.value)}
+                            className="w-full border border-line bg-transparent px-2 py-1 text-[11px] outline-none focus:border-fg"
+                          />
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              ))}
               <datalist id="portfolio-cats">
                 {categoryOptions.map((cat) => (
                   <option key={cat} value={cat} />
