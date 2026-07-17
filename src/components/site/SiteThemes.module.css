@@ -69,6 +69,7 @@
   background-position: center;
   background-color: var(--site-line);
   border-radius: var(--site-radius);
+  filter: grayscale(1);
 }
 .sHeroText {
   position: absolute;
@@ -142,6 +143,64 @@
   margin-top: 9px;
   font-variant-numeric: tabular-nums;
 }
+/* moving portfolio marquees — the «Тиша» signature */
+.sMarquees {
+  overflow: hidden;
+}
+.sMarquee {
+  display: flex;
+  gap: 12px;
+  width: max-content;
+}
+.sMarquee.m1 {
+  animation: ty-slideL 46s linear infinite;
+}
+.sMarquee.m2 {
+  animation: ty-slideR 52s linear infinite;
+  margin-top: 12px;
+}
+.sMarquee .cell {
+  width: 168px;
+  flex: none;
+  background-size: cover;
+  background-position: center;
+  background-color: var(--site-line);
+  filter: grayscale(1);
+}
+.sMarquee .r34 {
+  aspect-ratio: 3 / 4;
+}
+.sMarquee .r43 {
+  aspect-ratio: 4 / 3;
+  align-self: center;
+}
+.sMarquee .r11 {
+  aspect-ratio: 1 / 1;
+  align-self: flex-end;
+}
+@keyframes ty-slideL {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+@keyframes ty-slideR {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sMarquee {
+    animation: none !important;
+    flex-wrap: wrap;
+  }
+}
+
 /* inverted quote band (about) */
 .sBand {
   margin: 56px calc(clamp(20px, 5vw, 56px) * -1) 0;
