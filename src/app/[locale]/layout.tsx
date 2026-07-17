@@ -71,6 +71,10 @@ export function generateMetadata({ params }: { params: { locale: string } }): Me
         'max-video-preview': -1,
       },
     },
+    // Google Search Console ownership tag — set the env after registering.
+    verification: process.env.GOOGLE_SITE_VERIFICATION
+      ? { google: process.env.GOOGLE_SITE_VERIFICATION }
+      : undefined,
   }
 }
 
