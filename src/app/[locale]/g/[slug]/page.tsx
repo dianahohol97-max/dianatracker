@@ -4,10 +4,10 @@ import { isGalleryUnlocked } from '@/lib/gallery-access'
 import { getDictionary } from '@/lib/i18n'
 import { isLocale } from '@/lib/i18n/config'
 import { effectiveGalleryPlan } from '@/lib/plans'
+import { resolveGalleryTheme } from '@/lib/site/themes'
 import { getStorage } from '@/lib/storage'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
-import { DownloadAllButton } from '@/components/DownloadAllButton'
-import { GalleryGrid, type GridItem } from '@/components/GalleryGrid'
+import { GalleryExperience, type GalleryItem } from '@/components/gallery/GalleryExperience'
 import type { Asset } from '@/lib/types'
 
 export const dynamic = 'force-dynamic'
@@ -18,9 +18,10 @@ export const metadata = {
 }
 
 /**
- * The client-facing gallery. Zero interface chrome, zero our-brand marks —
- * only the photographer's work (and later their logo). Reads run as anon
- * under RLS, which only exposes published, non-expired galleries.
+ * The client-facing gallery: full-bleed cover, sticky selection bar,
+ * lightbox with explicit download buttons. The STYLE is the photographer's:
+ * per-gallery theme override → their site theme → «Тиша». Reads run as anon
+ * under RLS (published, non-expired galleries only).
  */
 export default async function PublicGalleryPage({
   params,
@@ -38,7 +39,9 @@ export default async function PublicGalleryPage({
   // Explicit column list — password_hash must never reach the page props.
   const { data: gallery } = await supabase
     .from('galleries')
-    .select('id, slug, title, description, event_date, password_hash, is_published')
+    .select(
+      'id, slug, title, description, event_date, password_hash, is_published, cover_asset_id, theme'
+    )
     .eq('slug', params.slug)
     .single<{
       id: string
@@ -48,6 +51,8 @@ export default async function PublicGalleryPage({
       event_date: string | null
       password_hash: string | null
       is_published: boolean
+      cover_asset_id: string | null
+      theme: string | null
     }>()
 
   if (!gallery) {
@@ -63,7 +68,11 @@ export default async function PublicGalleryPage({
       <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6">
         <h1 className="font-display text-3xl">{gallery.title}</h1>
         <p className="mt-4 text-muted">{dict.publicGallery.passwordTitle}</p>
-        <form method="post" action={`/api/galleries/${gallery.slug}/unlock`} className="mt-8 flex flex-col gap-4">
+        <form
+          method="post"
+          action={`/api/galleries/${gallery.slug}/unlock`}
+          className="mt-8 flex flex-col gap-4"
+        >
           <input type="hidden" name="locale" value={locale} />
           <label className="text-sm text-muted" htmlFor="password">
             {dict.publicGallery.passwordLabel}
@@ -97,25 +106,36 @@ export default async function PublicGalleryPage({
     .order('created_at')
     .returns<Asset[]>()
 
-  // Photographer's branding + their plan, which gates the logo and the
-  // platform badge (branding removal starts on the first paid tier).
+  // Branding + plan gates + site theme for style inheritance.
   const { data: brandingData } = await supabase.rpc('get_gallery_branding', {
     gallery_slug: gallery.slug,
   })
-  const brandingRows = brandingData as
-    | { display_name: string | null; logo_key: string | null; plan: string | null }[]
-    | null
-  const branding = brandingRows?.[0] ?? null
+  const branding =
+    (
+      brandingData as
+        | {
+            display_name: string | null
+            logo_key: string | null
+            plan: string | null
+            site_theme: string | null
+            site_mode: string | null
+          }[]
+        | null
+    )?.[0] ?? null
   const ownerPlan = effectiveGalleryPlan(branding?.plan ?? 'free', null)
+  const { theme, mode } = resolveGalleryTheme(
+    gallery.theme,
+    branding?.site_theme,
+    branding?.site_mode
+  )
 
-  // Presigned preview URLs, generated server-side; the browser loads media
-  // straight from R2. Falls back to the original until variants exist.
   const storage = getStorage()
   const logoUrl =
     branding?.logo_key && ownerPlan.features.photographerLogo
       ? await storage.getSignedReadUrl(branding.logo_key, { expiresInSeconds: 60 * 60 })
       : null
-  const items: GridItem[] = await Promise.all(
+
+  const items: GalleryItem[] = await Promise.all(
     (assets ?? []).map(async (asset) => ({
       id: asset.id,
       kind: asset.kind,
@@ -127,6 +147,15 @@ export default async function PublicGalleryPage({
       downloadHref: `/api/assets/${asset.id}/download`,
     }))
   )
+
+  const coverAsset =
+    (gallery.cover_asset_id && (assets ?? []).find((a) => a.id === gallery.cover_asset_id)) ||
+    (assets ?? [])[0]
+  const coverUrl = coverAsset
+    ? await storage.getSignedReadUrl(coverAsset.variants.preview ?? coverAsset.r2_key, {
+        expiresInSeconds: 60 * 60,
+      })
+    : null
 
   // Basic stats: count the view (fire-and-forget semantics, errors ignored).
   await supabase.rpc('record_gallery_view', { gallery_slug: gallery.slug })
@@ -144,63 +173,43 @@ export default async function PublicGalleryPage({
     initialFavorites = (selections ?? []).map((s: { asset_id: string }) => s.asset_id)
   }
 
+  const eventLine = [
+    gallery.event_date
+      ? new Date(gallery.event_date).toLocaleDateString(locale === 'uk' ? 'uk-UA' : 'en-GB', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        })
+      : null,
+    gallery.description,
+  ]
+    .filter(Boolean)
+    .join(' · ')
+
   return (
-    <main className="mx-auto max-w-6xl px-4 py-16 sm:px-8">
-      <header className="mb-16 text-center">
-        {logoUrl && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={logoUrl} alt={branding?.display_name ?? ''} className="mx-auto mb-6 max-h-14 w-auto" />
-        )}
-        {branding?.display_name && !logoUrl && (
-          <p className="mb-6 text-xs uppercase tracking-[0.3em] text-muted">
-            {branding.display_name}
-          </p>
-        )}
-        <h1 className="font-display text-4xl tracking-tight sm:text-5xl">{gallery.title}</h1>
-        {gallery.event_date && (
-          <p className="mt-4 text-sm uppercase tracking-widest text-muted">
-            {new Date(gallery.event_date).toLocaleDateString(locale === 'uk' ? 'uk-UA' : 'en-GB', {
-              day: 'numeric',
-              month: 'long',
-              year: 'numeric',
-            })}
-          </p>
-        )}
-        {gallery.description && (
-          <p className="mx-auto mt-6 max-w-2xl leading-relaxed text-muted">
-            {gallery.description}
-          </p>
-        )}
-        {items.length > 0 && (
-          <div className="mt-8">
-            <DownloadAllButton
-              slug={gallery.slug}
-              label={dict.publicGallery.downloadAll}
-              progressLabel={dict.publicGallery.preparingArchive}
-              errorLabel={dict.publicGallery.archiveError}
-            />
-          </div>
-        )}
-      </header>
-
-      <GalleryGrid
-        items={items}
-        slug={gallery.slug}
-        downloadLabel={dict.publicGallery.downloadOriginal}
-        favoriteLabel={dict.publicGallery.favoriteToggle}
-        initialFavorites={initialFavorites}
-      />
-
-      {!ownerPlan.features.brandingRemoval && (
-        <footer className="mt-16 text-center">
-          <a
-            href={`/${locale}`}
-            className="text-xs uppercase tracking-widest text-muted hover:text-fg"
-          >
-            {dict.publicGallery.madeOn}
-          </a>
-        </footer>
-      )}
-    </main>
+    <GalleryExperience
+      locale={locale}
+      slug={gallery.slug}
+      title={gallery.title}
+      eventLine={eventLine || null}
+      brandName={branding?.display_name ?? null}
+      logoUrl={logoUrl}
+      coverUrl={coverUrl}
+      items={items}
+      initialFavorites={initialFavorites}
+      showBadge={!ownerPlan.features.brandingRemoval}
+      theme={theme}
+      mode={mode}
+      labels={{
+        scrollHint: dict.publicGallery.scrollHint,
+        selected: dict.publicGallery.selected,
+        downloadAll: dict.publicGallery.downloadAll,
+        preparingArchive: dict.publicGallery.preparingArchive,
+        archiveError: dict.publicGallery.archiveError,
+        downloadOriginal: dict.publicGallery.downloadOriginal,
+        favoriteToggle: dict.publicGallery.favoriteToggle,
+        madeOn: dict.publicGallery.madeOn,
+      }}
+    />
   )
 }

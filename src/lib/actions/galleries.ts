@@ -48,6 +48,27 @@ export async function createGallery(locale: Locale, formData: FormData): Promise
   redirect(`/${locale}/dashboard/galleries/${data.id}`)
 }
 
+/** Gallery style: '' = inherit from the site, else a theme-catalog value. */
+export async function setGalleryTheme(
+  locale: Locale,
+  galleryId: string,
+  formData: FormData
+): Promise<void> {
+  const { supabase } = await requireUser()
+  const value = String(formData.get('theme') ?? '').trim()
+  const { THEME_CATALOG } = await import('@/lib/site/themes')
+  if (value && !THEME_CATALOG.some((entry) => entry.value === value)) {
+    throw new Error('Unknown gallery theme')
+  }
+
+  const { error } = await supabase
+    .from('galleries')
+    .update({ theme: value || null })
+    .eq('id', galleryId)
+  if (error) throw new Error(`Failed to set gallery theme: ${error.message}`)
+  revalidatePath(`/${locale}/dashboard/galleries/${galleryId}`)
+}
+
 export async function setGalleryPublished(
   locale: Locale,
   galleryId: string,

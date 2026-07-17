@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
-import { deleteGallery, setGalleryPublished } from '@/lib/actions/galleries'
+import { deleteGallery, setGalleryPublished, setGalleryTheme } from '@/lib/actions/galleries'
 import { getDictionary } from '@/lib/i18n'
 import { isLocale } from '@/lib/i18n/config'
 import { effectiveGalleryPlan } from '@/lib/plans'
@@ -96,6 +96,19 @@ export default async function ManageGalleryPage({
 
   const publishAction = setGalleryPublished.bind(null, locale, gallery.id, !gallery.is_published)
   const deleteAction = deleteGallery.bind(null, locale, gallery.id)
+  const themeAction = setGalleryTheme.bind(null, locale, gallery.id)
+
+  const themeOptions: { value: string; label: string }[] = [
+    { value: '', label: dict.galleryManage.styleInherit },
+    { value: 'tysha', label: dict.site.themeTysha },
+    { value: 'opivnich', label: dict.site.themeOpivnich },
+    { value: 'povitria', label: dict.site.themePovitria },
+    { value: 'plivka', label: dict.site.themePlivka },
+    { value: 'zhurnal', label: dict.site.themeZhurnal },
+    { value: 'galereia', label: dict.site.themeGalereia },
+    { value: 'arkhiv', label: dict.site.themeArkhiv },
+    { value: 'prodakshn', label: dict.site.themeProdakshn },
+  ]
 
   return (
     <main className="mx-auto max-w-5xl px-6 py-16">
@@ -145,6 +158,27 @@ export default async function ManageGalleryPage({
             {dict.galleryManage.publicLink}: {publicUrl}
           </p>
         )}
+
+        <form action={themeAction} className="mt-6 flex flex-wrap items-center gap-3">
+          <label className="text-sm text-muted" htmlFor="gallery-theme">
+            {dict.galleryManage.styleLabel}
+          </label>
+          <select
+            id="gallery-theme"
+            name="theme"
+            defaultValue={gallery.theme ?? ''}
+            className="border border-line bg-transparent px-3 py-2 text-sm outline-none focus:border-fg"
+          >
+            {themeOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          <button type="submit" className="text-sm underline hover:text-accent">
+            {dict.galleryManage.styleSave}
+          </button>
+        </form>
       </header>
 
       <section className="mt-12">

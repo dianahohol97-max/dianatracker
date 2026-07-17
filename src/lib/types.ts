@@ -32,6 +32,8 @@ export interface Gallery {
   expires_at: string | null
   is_published: boolean
   view_count: number
+  /** Style override (theme-catalog value); null = inherit from the site. */
+  theme: string | null
   created_at: string
   updated_at: string
 }

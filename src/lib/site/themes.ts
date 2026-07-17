@@ -152,6 +152,26 @@ export function siteCssVars(theme: ThemeId, mode: SiteMode): CSSProperties {
   } as CSSProperties
 }
 
+/**
+ * Gallery style resolution: per-gallery override → the photographer's site
+ * theme (bundle looks seamless) → «Тиша». Gallery overrides use catalog
+ * values, so «опівніч» works as a per-gallery choice too.
+ */
+export function resolveGalleryTheme(
+  galleryTheme: string | null | undefined,
+  siteTheme: string | null | undefined,
+  siteMode: string | null | undefined
+): { theme: ThemeId; mode: SiteMode } {
+  if (galleryTheme) {
+    const entry = THEME_CATALOG.find((item) => item.value === galleryTheme)
+    if (entry) return { theme: entry.theme, mode: entry.mode }
+  }
+  if (siteTheme && isThemeId(siteTheme)) {
+    return { theme: siteTheme, mode: siteMode === 'night' ? 'night' : 'light' }
+  }
+  return { theme: 'tysha', mode: 'light' }
+}
+
 /** Catalog entries shown in the editor: 8 items, «Опівніч» = tysha+night. */
 export const THEME_CATALOG: { value: string; theme: ThemeId; mode: SiteMode }[] = [
   { value: 'tysha', theme: 'tysha', mode: 'light' },

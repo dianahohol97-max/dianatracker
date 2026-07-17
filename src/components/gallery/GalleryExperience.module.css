@@ -1,0 +1,178 @@
+/* Themed public gallery — colors/typography come from --g-* vars set inline
+   from the resolved theme tokens (gallery override → site theme → Тиша). */
+
+.root {
+  background: var(--g-bg);
+  color: var(--g-fg);
+  font-family: var(--g-body);
+  min-height: 100vh;
+}
+
+.caps {
+  font-family: var(--g-label);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--g-mut);
+}
+
+/* ---------- cover ---------- */
+.cover { position: relative; height: min(88vh, 760px); margin: 10px; }
+.coverImg {
+  position: absolute; inset: 0; border-radius: 16px;
+  background-size: cover; background-position: center;
+}
+.coverShade {
+  position: absolute; inset: 0; border-radius: 16px;
+  background: linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.32));
+}
+.coverInner {
+  position: absolute; inset: 0; z-index: 1;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; color: #f7f4ee; padding: 24px;
+}
+.coverInner .caps { color: rgba(247, 244, 238, 0.85); }
+.coverTitle {
+  font-family: var(--g-display);
+  font-weight: var(--g-display-weight);
+  text-transform: var(--g-display-transform);
+  letter-spacing: var(--g-display-tracking);
+  margin: 16px 0 12px;
+  font-size: clamp(34px, 6vw, 68px);
+  line-height: 1.08;
+  text-shadow: 0 2px 50px rgba(0, 0, 0, 0.45);
+  text-wrap: balance;
+}
+.scrollHint {
+  position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%);
+  color: rgba(247, 244, 238, 0.8); z-index: 1;
+}
+
+/* ---------- sticky bar ---------- */
+.bar {
+  position: sticky; top: 0; z-index: 40;
+  display: flex; align-items: center; gap: 14px;
+  padding: 11px clamp(14px, 3vw, 32px);
+  background: color-mix(in srgb, var(--g-bg) 86%, transparent);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--g-line);
+}
+.barName {
+  font-family: var(--g-display);
+  text-transform: var(--g-display-transform);
+  font-size: 15px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.selChip {
+  display: inline-flex; align-items: center; gap: 7px; flex: none;
+  border-radius: 999px; padding: 6px 13px;
+  font-size: 12px; font-weight: 700;
+  border: 1px solid var(--g-line); color: var(--g-mut);
+  transition: border-color 0.2s, color 0.2s;
+}
+.selChipOn { composes: selChip; border-color: var(--g-accent); color: var(--g-accent); }
+.dlAll {
+  margin-left: auto; flex: none;
+  border: 1px solid var(--g-fg); border-radius: 999px; background: none;
+  padding: 9px 18px; cursor: pointer; color: var(--g-fg);
+  font-family: var(--g-label); font-size: 10.5px; font-weight: 700;
+  letter-spacing: 0.13em; text-transform: uppercase;
+  transition: background 0.2s, color 0.2s;
+}
+.dlAll:hover { background: var(--g-fg); color: var(--g-bg); }
+.dlAll:disabled { opacity: 0.6; cursor: default; }
+
+/* ---------- grid ---------- */
+.grid {
+  columns: 3; column-gap: 14px;
+  padding: 24px clamp(14px, 3vw, 32px) 8px;
+  max-width: 1280px; margin: 0 auto;
+}
+.shot {
+  position: relative; break-inside: avoid; margin: 0 0 14px;
+  border-radius: 10px; overflow: hidden; cursor: zoom-in;
+}
+.shotMedia { display: block; width: 100%; height: auto; }
+.roundBtn {
+  position: absolute; top: 10px; width: 36px; height: 36px;
+  border: none; border-radius: 50%; cursor: pointer;
+  background: color-mix(in srgb, var(--g-bg) 92%, transparent);
+  color: var(--g-fg);
+  display: grid; place-items: center; font-size: 15px; line-height: 1;
+  opacity: 0; transform: translateY(-4px);
+  transition: opacity 0.2s, transform 0.2s, color 0.2s;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.16);
+}
+.heart { composes: roundBtn; right: 10px; }
+.dlOne { composes: roundBtn; right: 54px; font-weight: 800; font-size: 14px; text-decoration: none; }
+.shot:hover .roundBtn { opacity: 1; transform: none; }
+.heartOn { opacity: 1 !important; transform: none !important; color: var(--g-accent) !important; }
+.dlOne:hover { color: var(--g-accent); }
+@media (hover: none) {
+  .roundBtn { opacity: 1; transform: none; }
+}
+
+/* ---------- footer ---------- */
+.foot { text-align: center; padding: 44px 24px 56px; }
+.sig {
+  font-family: var(--g-display);
+  text-transform: var(--g-display-transform);
+  font-size: 18px;
+}
+.badge {
+  display: inline-block; margin-top: 20px;
+  font-family: var(--g-label); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--g-mut); text-decoration: none;
+  border-bottom: 1px solid var(--g-line); padding-bottom: 2px;
+}
+.badge:hover { color: var(--g-fg); }
+
+/* ---------- lightbox ---------- */
+.lb {
+  position: fixed; inset: 0; z-index: 90;
+  background: rgba(10, 9, 11, 0.94);
+  display: flex; align-items: center; justify-content: center;
+  padding: 4vh 4vw;
+}
+.lbMedia {
+  max-width: min(82vw, 1000px); max-height: 78vh;
+  border-radius: 8px; object-fit: contain;
+}
+.lbBtn {
+  position: absolute; width: 44px; height: 44px;
+  border: none; border-radius: 50%; cursor: pointer;
+  background: rgba(250, 249, 247, 0.1); color: #f7f4ee;
+  font-size: 17px; display: grid; place-items: center;
+  transition: background 0.2s;
+}
+.lbBtn:hover { background: rgba(250, 249, 247, 0.22); }
+.lbClose { composes: lbBtn; top: 22px; right: 22px; }
+.lbPrev { composes: lbBtn; left: 16px; top: 50%; transform: translateY(-50%); }
+.lbNext { composes: lbBtn; right: 16px; top: 50%; transform: translateY(-50%); }
+.lbFoot {
+  position: absolute; bottom: 18px; left: 0; right: 0;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+}
+.lbDl {
+  border: none; border-radius: 999px; cursor: pointer;
+  background: #f7f4ee; color: #17161a; padding: 12px 26px;
+  font-family: var(--g-label); font-weight: 800; font-size: 11px;
+  letter-spacing: 0.14em; text-transform: uppercase; text-decoration: none;
+}
+.lbDl:hover { background: #fff; }
+.lbCap {
+  font-family: var(--g-label); font-size: 10.5px; font-weight: 700;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: rgba(247, 244, 238, 0.6);
+}
+
+@media (max-width: 900px) { .grid { columns: 2; } }
+@media (max-width: 560px) {
+  .grid { columns: 1; }
+  .barName { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .roundBtn { transition: none; }
+}
