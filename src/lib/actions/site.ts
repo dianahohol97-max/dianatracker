@@ -35,8 +35,11 @@ export async function saveSite(locale: Locale, formData: FormData): Promise<void
   const items: PricingItem[] = [0, 1, 2]
     .map((index) => ({
       name: str(formData, `price_name_${index}`),
-      description: str(formData, `price_desc_${index}`),
       price: str(formData, `price_amount_${index}`),
+      includes: String(formData.get(`price_includes_${index}`) ?? '')
+        .split('\n')
+        .map((line) => line.trim())
+        .filter(Boolean),
     }))
     .filter((item) => item.name)
 

@@ -18,9 +18,8 @@ interface SiteRow {
   logo_key: string | null
 }
 
-interface GalleryRow {
-  slug: string
-  title: string
+interface PortfolioRow {
+  id: string
   preview_key: string | null
 }
 
@@ -73,9 +72,9 @@ export default async function PublicSitePage({
   const dict = await getDictionary(locale)
 
   const supabase = createSupabaseServerClient()
-  const [{ data: siteData }, { data: galleriesData }] = await Promise.all([
+  const [{ data: siteData }, { data: portfolioData }] = await Promise.all([
     supabase.rpc('get_site', { p_handle: params.handle }),
-    supabase.rpc('get_site_galleries', { p_handle: params.handle }),
+    supabase.rpc('get_site_portfolio', { p_handle: params.handle }),
   ])
 
   const site = (siteData as SiteRow[] | null)?.[0]
@@ -87,13 +86,11 @@ export default async function PublicSitePage({
     : null
 
   const portfolio: PortfolioItem[] = await Promise.all(
-    ((galleriesData as GalleryRow[] | null) ?? []).map(async (gallery) => ({
-      slug: gallery.slug,
-      title: gallery.title,
-      previewUrl: gallery.preview_key
-        ? await storage.getSignedReadUrl(gallery.preview_key, { expiresInSeconds: 60 * 60 })
+    ((portfolioData as PortfolioRow[] | null) ?? []).map(async (row) => ({
+      id: row.id,
+      previewUrl: row.preview_key
+        ? await storage.getSignedReadUrl(row.preview_key, { expiresInSeconds: 60 * 60 })
         : null,
-      href: `/${locale}/g/${gallery.slug}`,
     }))
   )
 
@@ -129,7 +126,6 @@ export default async function PublicSitePage({
         about: dict.publicSite.about,
         pricing: dict.publicSite.pricing,
         contacts: dict.publicSite.contacts,
-        openGallery: dict.publicSite.openGallery,
         book: dict.publicSite.book,
       }}
       />

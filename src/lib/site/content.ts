@@ -5,8 +5,9 @@
 
 export interface PricingItem {
   name: string
-  description: string
   price: string
+  /** What the price includes — one line per item. */
+  includes: string[]
 }
 
 export interface SiteContent {
@@ -48,8 +49,13 @@ export function parseSiteContent(value: unknown): SiteContent {
         .filter((i): i is Record<string, unknown> => typeof i === 'object' && i !== null)
         .map((i) => ({
           name: typeof i.name === 'string' ? i.name : '',
-          description: typeof i.description === 'string' ? i.description : '',
           price: typeof i.price === 'string' ? i.price : '',
+          includes: Array.isArray(i.includes)
+            ? i.includes.filter((line): line is string => typeof line === 'string' && !!line)
+            : // legacy shape: a single description becomes the first line
+              typeof i.description === 'string' && i.description
+              ? [i.description]
+              : [],
         }))
         .filter((i) => i.name),
     },

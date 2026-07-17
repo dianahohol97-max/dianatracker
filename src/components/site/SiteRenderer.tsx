@@ -2,10 +2,8 @@ import { siteCssVars, type SiteMode, type ThemeId } from '@/lib/site/themes'
 import type { SiteContent } from '@/lib/site/content'
 
 export interface PortfolioItem {
-  slug: string
-  title: string
+  id: string
   previewUrl: string | null
-  href: string
 }
 
 export interface SiteLabels {
@@ -13,7 +11,6 @@ export interface SiteLabels {
   about: string
   pricing: string
   contacts: string
-  openGallery: string
   book: string
 }
 
@@ -117,33 +114,22 @@ export function SiteRenderer({
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
                 gap: 22,
               }}
             >
               {portfolio.map((item) => (
-                <a
-                  key={item.slug}
-                  href={item.href}
-                  style={{ color: 'inherit', textDecoration: 'none' }}
-                >
-                  <span
-                    style={{
-                      display: 'block',
-                      aspectRatio: '4 / 5',
-                      borderRadius: 'var(--site-radius)',
-                      background: item.previewUrl
-                        ? `center / cover no-repeat url("${item.previewUrl}")`
-                        : 'var(--site-line)',
-                    }}
-                  />
-                  <span style={{ display: 'flex', justifyContent: 'space-between', gap: 10, marginTop: 10 }}>
-                    <span style={{ fontFamily: 'var(--site-font-display)', fontSize: 16 }}>
-                      {item.title}
-                    </span>
-                    <span style={{ ...label, color: 'var(--site-accent)' }}>{labels.openGallery}</span>
-                  </span>
-                </a>
+                <span
+                  key={item.id}
+                  style={{
+                    display: 'block',
+                    aspectRatio: '4 / 5',
+                    borderRadius: 'var(--site-radius)',
+                    background: item.previewUrl
+                      ? `center / cover no-repeat url("${item.previewUrl}")`
+                      : 'var(--site-line)',
+                  }}
+                />
               ))}
             </div>
           </section>
@@ -196,14 +182,23 @@ export function SiteRenderer({
                   key={item.name}
                   style={{ borderLeft: '1px solid var(--site-line)', paddingLeft: 18 }}
                 >
-                  <h3 style={{ ...display, fontSize: 19, marginBottom: 8 }}>{item.name}</h3>
-                  {item.description && (
-                    <p style={{ margin: 0, fontSize: 13.5, color: 'var(--site-muted)', lineHeight: 1.6 }}>
-                      {item.description}
-                    </p>
-                  )}
-                  {item.price && (
-                    <p style={{ margin: '12px 0 0', fontSize: 15 }}>{item.price}</p>
+                  <h3 style={{ ...display, fontSize: 19, marginBottom: 6 }}>{item.name}</h3>
+                  {item.price && <p style={{ margin: '0 0 10px', fontSize: 15 }}>{item.price}</p>}
+                  {item.includes.length > 0 && (
+                    <ul
+                      style={{
+                        margin: 0,
+                        padding: 0,
+                        listStyle: 'none',
+                        fontSize: 13.5,
+                        color: 'var(--site-muted)',
+                        lineHeight: 1.8,
+                      }}
+                    >
+                      {item.includes.map((line) => (
+                        <li key={line}>— {line}</li>
+                      ))}
+                    </ul>
                   )}
                 </div>
               ))}
