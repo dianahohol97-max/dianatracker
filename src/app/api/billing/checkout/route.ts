@@ -84,7 +84,12 @@ export async function POST(request: NextRequest) {
   const payments = getPayments()
   const admin = createSupabaseAdminClient()
   if (!payments || !admin) {
-    return NextResponse.json({ error: 'billing_not_configured' }, { status: 503 })
+    const missing = [
+      !payments ? 'payment_provider (MONOBANK_TOKEN / PAYMENT_PROVIDER)' : null,
+      !admin ? 'SUPABASE_SERVICE_ROLE_KEY' : null,
+    ].filter(Boolean)
+    console.error('billing checkout: not configured, missing:', missing.join(', '))
+    return NextResponse.json({ error: 'billing_not_configured', missing }, { status: 503 })
   }
 
   const orderId = crypto.randomUUID()
