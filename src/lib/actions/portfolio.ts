@@ -30,3 +30,48 @@ export async function deletePortfolioAsset(locale: Locale, assetId: string): Pro
 
   revalidatePath(`/${locale}/dashboard/site`)
 }
+
+/** Toggle whether one portfolio photo appears on the public site. */
+export async function setPortfolioVisibility(
+  locale: Locale,
+  assetId: string,
+  visible: boolean
+): Promise<void> {
+  const supabase = createSupabaseServerClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) redirect('/uk/login')
+
+  // RLS (owner-all) already scopes writes to the caller's rows; the explicit
+  // owner_id filter is defense in depth.
+  const { error } = await supabase
+    .from('portfolio_assets')
+    .update({ visible })
+    .eq('id', assetId)
+    .eq('owner_id', user.id)
+  if (error) throw new Error(`Failed to update portfolio photo: ${error.message}`)
+
+  revalidatePath(`/${locale}/dashboard/site`)
+}
+
+/** Persist a new portfolio order (position = index in the given id list). */
+export async function reorderPortfolio(locale: Locale, orderedIds: string[]): Promise<void> {
+  const supabase = createSupabaseServerClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) redirect('/uk/login')
+
+  await Promise.all(
+    orderedIds.map((id, index) =>
+      supabase
+        .from('portfolio_assets')
+        .update({ position: index })
+        .eq('id', id)
+        .eq('owner_id', user.id)
+    )
+  )
+
+  revalidatePath(`/${locale}/dashboard/site`)
+}

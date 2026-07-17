@@ -5,6 +5,8 @@ import { LeadForm, type LeadFormLabels } from './LeadForm'
 export interface PortfolioItem {
   id: string
   previewUrl: string | null
+  /** Editor-only: the public RPC already filters hidden photos out. */
+  visible?: boolean
 }
 
 export interface SiteLabels {

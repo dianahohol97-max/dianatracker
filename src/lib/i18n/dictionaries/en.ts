@@ -197,6 +197,12 @@ export const en: Dictionary = {
       'If booking is enabled, paste your booking page address here — a button appears on the site.',
     portfolioNote:
       'The Portfolio block is assembled automatically from your published galleries — nothing to configure.',
+    portfolioManageHint:
+      'Drag photos to reorder. The eye shows or hides a photo on the site. ✕ deletes it.',
+    portfolioDragHint: 'Drag to reorder',
+    portfolioHiddenBadge: 'hidden',
+    portfolioShow: 'Show on site',
+    portfolioHide: 'Hide from site',
     optionsLegend: 'Options',
     optBilingual: 'Bilingual site (Ukrainian + English)',
     optBilingualHint:
