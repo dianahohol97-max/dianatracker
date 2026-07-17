@@ -7,6 +7,11 @@ import { BookingWidget, type PublicSlot } from '@/components/BookingWidget'
 
 export const dynamic = 'force-dynamic'
 
+/** Booking pages are shared by direct link; keep them out of indexes. */
+export const metadata = {
+  robots: { index: false, follow: false },
+}
+
 interface BookingProfile {
   display_name: string | null
   logo_key: string | null

@@ -12,11 +12,60 @@ import { Logo } from '@/components/Logo'
 import { Reveal } from '@/components/landing/Reveal'
 import s from './landing.module.css'
 
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+
+/** Structured data: product with real plan prices + the FAQ — rich results. */
+function buildJsonLd(locale: string, t: ReturnType<typeof getLandingCopy>) {
+  return {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'Organization',
+        '@id': `${BASE_URL}/#org`,
+        name: 'проЯв',
+        url: BASE_URL,
+        logo: `${BASE_URL}/icon.svg`,
+      },
+      {
+        '@type': 'WebSite',
+        '@id': `${BASE_URL}/#site`,
+        name: 'проЯв',
+        url: BASE_URL,
+        inLanguage: ['uk', 'en'],
+        publisher: { '@id': `${BASE_URL}/#org` },
+      },
+      {
+        '@type': 'SoftwareApplication',
+        name: 'проЯв',
+        applicationCategory: 'BusinessApplication',
+        operatingSystem: 'Web',
+        url: `${BASE_URL}/${locale}`,
+        description: t.hero.lede,
+        offers: (Object.keys(GALLERY_PLANS) as GalleryPlanId[]).map((id) => ({
+          '@type': 'Offer',
+          name: t.pricing.plans[id].name,
+          price: GALLERY_PLANS[id].priceUahMonth,
+          priceCurrency: 'UAH',
+        })),
+      },
+      {
+        '@type': 'FAQPage',
+        mainEntity: t.faq.items.map((item) => ({
+          '@type': 'Question',
+          name: item.q,
+          acceptedAnswer: { '@type': 'Answer', text: item.a },
+        })),
+      },
+    ],
+  }
+}
+
 export default function LandingPage({ params }: { params: { locale: string } }) {
   if (!isLocale(params.locale)) notFound()
   const locale = params.locale
   const t = getLandingCopy(locale)
   const login = `/${locale}/login`
+  const jsonLd = buildJsonLd(locale, t)
 
   const marqueeTiles = ['g1 t34', 'g4 t43', 'g2 t11', 'g5 t34', 'g3 t43', 'g1 t11', 'g2 t34', 'g4 t43']
   const tile = (spec: string, key: number) => {
@@ -26,6 +75,10 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
 
   return (
     <main className={s.page}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <div className={s.wrap}>
         {/* ---------- nav ---------- */}
         <nav className={s.nav}>

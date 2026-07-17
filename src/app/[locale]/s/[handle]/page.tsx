@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getDictionary } from '@/lib/i18n'
 import { isLocale } from '@/lib/i18n/config'
@@ -21,6 +22,40 @@ interface GalleryRow {
   slug: string
   title: string
   preview_key: string | null
+}
+
+/**
+ * Photographer sites ARE meant to rank (unlike client galleries): the title
+ * and description come from the photographer's own content, and — true to
+ * the zero-branding principle — the platform's title template is escaped
+ * with an absolute title, so «проЯв» never appears in their tab or snippet.
+ */
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string; handle: string }
+}): Promise<Metadata> {
+  const supabase = createSupabaseServerClient()
+  const { data } = await supabase.rpc('get_site', { p_handle: params.handle })
+  const site = (data as SiteRow[] | null)?.[0]
+  if (!site) return { robots: { index: false, follow: false } }
+
+  const content = parseSiteContent(site.content)
+  const title = content.hero.title || site.display_name || params.handle
+  const description =
+    (content.about.text || content.hero.subtitle || title).replace(/\s+/g, ' ').slice(0, 160)
+
+  return {
+    title: { absolute: title },
+    description,
+    alternates: { canonical: `/${params.locale}/s/${params.handle}` },
+    openGraph: { type: 'website', title, description },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: { index: true, follow: true, 'max-image-preview': 'large' },
+    },
+  }
 }
 
 /**
@@ -62,9 +97,28 @@ export default async function PublicSitePage({
     }))
   )
 
+  // Structured data for the PHOTOGRAPHER (their business, not ours).
+  const content = parseSiteContent(site.content)
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'ProfessionalService',
+    name: site.display_name ?? content.hero.title,
+    description: content.about.text || content.hero.subtitle || undefined,
+    email: content.contact.email || undefined,
+    telephone: content.contact.phone || undefined,
+    sameAs: content.contact.instagram
+      ? [`https://instagram.com/${content.contact.instagram.replace(/^@/, '')}`]
+      : undefined,
+  }
+
   return (
-    <SiteRenderer
-      theme={site.theme}
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <SiteRenderer
+        theme={site.theme}
       mode={site.mode === 'night' ? 'night' : 'light'}
       content={parseSiteContent(site.content)}
       displayName={site.display_name}
@@ -78,6 +132,7 @@ export default async function PublicSitePage({
         openGallery: dict.publicSite.openGallery,
         book: dict.publicSite.book,
       }}
-    />
+      />
+    </>
   )
 }

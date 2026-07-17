@@ -12,6 +12,11 @@ import type { Asset } from '@/lib/types'
 
 export const dynamic = 'force-dynamic'
 
+/** Client galleries are private-by-link — never in search indexes. */
+export const metadata = {
+  robots: { index: false, follow: false },
+}
+
 /**
  * The client-facing gallery. Zero interface chrome, zero our-brand marks —
  * only the photographer's work (and later their logo). Reads run as anon
