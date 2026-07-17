@@ -236,10 +236,183 @@
   border-radius: var(--site-radius);
 }
 
+/* ================= «Галерея» (museum wall) ================= */
+.gal {
+  background: var(--site-bg);
+  color: var(--site-fg);
+  font-family: var(--site-font-body);
+  min-height: 100vh;
+  padding: 0 clamp(20px, 5vw, 56px) 56px;
+}
+.galInner {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+.galNav {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 24px 0;
+  font-size: 12px;
+  border-bottom: 1px solid var(--site-fg);
+}
+.galBrand {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.galBrand img {
+  max-height: 28px;
+  width: auto;
+}
+.galNav nav {
+  display: flex;
+  gap: 20px;
+  align-items: baseline;
+}
+.galNav nav a {
+  color: var(--site-muted);
+  text-decoration: none;
+  font-size: 12px;
+}
+.galNav nav a:hover {
+  color: var(--site-accent);
+}
+.galHero {
+  padding: clamp(30px, 5vw, 60px) 0 clamp(20px, 3vw, 36px);
+}
+.galHero h1 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0;
+  font-size: clamp(34px, 7vw, 78px);
+  line-height: 1.02;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+.galHero p {
+  margin: 18px 0 0;
+  color: var(--site-muted);
+  max-width: 52ch;
+  font-size: 14px;
+}
+.galCatHead {
+  margin: 40px 0 14px;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.galWorks {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 26px 20px;
+}
+.galWorks figure {
+  margin: 0;
+}
+.galWorkImg {
+  aspect-ratio: 4 / 5;
+  background-size: cover;
+  background-position: center;
+  background-color: var(--site-line);
+}
+.galWorks figcaption {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 9px;
+  font-size: 11px;
+  color: var(--site-muted);
+  font-variant-numeric: tabular-nums;
+}
+.galAbout {
+  margin-top: 48px;
+  border-top: 1px solid var(--site-fg);
+  padding-top: 22px;
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) minmax(0, 2fr);
+  gap: 24px;
+}
+.galAbout p.lbl {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.galAbout p.txt {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.7;
+  max-width: 60ch;
+  white-space: pre-line;
+}
+.galPrice {
+  margin-top: 44px;
+  border-top: 1px solid var(--site-fg);
+  padding-top: 22px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+.galPrice > div {
+  border-left: 1px solid var(--site-line);
+  padding-left: 16px;
+}
+.galPrice h3 {
+  margin: 0 0 6px;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.galPrice ul {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+  color: var(--site-muted);
+  line-height: 1.7;
+}
+.galPrice b {
+  display: block;
+  margin-top: 10px;
+  font-size: 15px;
+  font-weight: 500;
+}
+.galContact {
+  margin-top: 48px;
+  border-top: 1px solid var(--site-fg);
+  padding-top: 28px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 28px;
+  align-items: baseline;
+  font-size: 14px;
+}
+.galContact a {
+  color: var(--site-fg);
+  text-decoration: none;
+}
+.galContact a.book {
+  margin-left: auto;
+  border: 1px solid var(--site-fg);
+  padding: 11px 26px;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
 @media (max-width: 720px) {
   .sGrid,
-  .sSvcGrid {
+  .sSvcGrid,
+  .galWorks,
+  .galPrice {
     grid-template-columns: 1fr 1fr;
+  }
+  .galAbout {
+    grid-template-columns: 1fr;
   }
   .sWork:nth-child(n),
   .sSvc:nth-child(n) {

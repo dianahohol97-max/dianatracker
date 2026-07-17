@@ -1,6 +1,7 @@
 import { siteCssVars, type SiteMode, type ThemeId } from '@/lib/site/themes'
 import type { SiteContent } from '@/lib/site/content'
 import { LeadForm, type LeadFormLabels } from './LeadForm'
+import { ThemeGallery } from './ThemeGallery'
 import { ThemeSilence } from './ThemeSilence'
 
 export interface PortfolioItem {
@@ -80,12 +81,27 @@ export function SiteRenderer({
 }) {
   const vars = siteCssVars(theme, mode)
 
-  // «Тиша»/«Опівніч» ship their own distinct layout; other themes still use
+  // Themes with their own distinct layout dispatch here; the rest still use
   // the shared block layout below until each gets its own design.
   if (theme === 'tysha') {
     return (
       <div style={vars}>
         <ThemeSilence
+          content={content}
+          displayName={displayName}
+          logoUrl={logoUrl}
+          portfolio={portfolio}
+          labels={labels}
+          langSwitch={langSwitch}
+          leadForm={leadForm}
+        />
+      </div>
+    )
+  }
+  if (theme === 'galereia') {
+    return (
+      <div style={vars}>
+        <ThemeGallery
           content={content}
           displayName={displayName}
           logoUrl={logoUrl}
