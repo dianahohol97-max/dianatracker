@@ -1,10 +1,9 @@
 import type { SiteContent } from '@/lib/site/content'
 import { LeadForm, type LeadFormLabels } from './LeadForm'
-import { groupPortfolio, type LangSwitch, type PortfolioItem, type SiteLabels } from './SiteRenderer'
+import type { LangSwitch, PortfolioItem, SiteLabels } from './SiteRenderer'
 import s from './SiteThemes.module.css'
 
 const RATIOS = [s.r34, s.r43, s.r11]
-const O = ['О1', 'О2', 'О3', 'О4', 'О5', 'О6']
 
 function bg(url: string | null | undefined): React.CSSProperties | undefined {
   return url ? { backgroundImage: `url("${url}")` } : undefined
@@ -45,6 +44,7 @@ export function ThemeSilence({
   labels,
   langSwitch,
   leadForm,
+  night = false,
 }: {
   content: SiteContent
   displayName: string | null
@@ -53,13 +53,15 @@ export function ThemeSilence({
   labels: SiteLabels
   langSwitch?: LangSwitch
   leadForm?: { handle: string | null; labels: LeadFormLabels }
+  /** «Опівніч»: night hero — the giant name over drifting photos. */
+  night?: boolean
 }) {
   const brand = displayName ?? ''
   const heroImg = portfolio[0]?.previewUrl ?? null
-  const groups = groupPortfolio(portfolio)
-  const hasCategories = groups.some((group) => group.category !== null)
   const rowA = portfolio.filter((_, i) => i % 2 === 0)
   const rowB = portfolio.filter((_, i) => i % 2 === 1)
+  const floats = portfolio.slice(0, 4)
+  const floatClass = [s.sFl1, s.sFl2, s.sFl3, s.sFl4]
 
   return (
     <div className={s.silence}>
@@ -95,20 +97,32 @@ export function ThemeSilence({
           </span>
         </nav>
 
-        {/* full-bleed hero */}
-        <header className={s.sHero}>
-          <div className={s.sHeroImg} style={bg(heroImg)} />
-          <div className={s.sHeroText}>
-            <h1>{content.hero.title || brand}</h1>
-            {content.hero.subtitle && <p>{content.hero.subtitle}</p>}
-          </div>
-          {content.hero.subtitle && (
-            <span className={`${s.sMono} ${s.sCorner} ${s.sCornerL}`}>{content.hero.subtitle}</span>
-          )}
-          {portfolio.length > 0 && (
-            <span className={`${s.sMono} ${s.sCorner} ${s.sCornerR}`}>{labels.portfolio} ↓</span>
-          )}
-        </header>
+        {/* hero — night: drifting photos + giant name; day: full-bleed cover */}
+        {night ? (
+          <header className={s.sNight}>
+            {floats.map((item, index) => (
+              <div key={item.id} className={`${s.sFl} ${floatClass[index]}`} style={bg(item.previewUrl)} />
+            ))}
+            <div className={s.sNightName}>
+              <h1>{content.hero.title || brand}</h1>
+              {content.hero.subtitle && <p className={s.sMono}>{content.hero.subtitle}</p>}
+            </div>
+          </header>
+        ) : (
+          <header className={s.sHero}>
+            <div className={s.sHeroImg} style={bg(heroImg)} />
+            <div className={s.sHeroText}>
+              <h1>{content.hero.title || brand}</h1>
+              {content.hero.subtitle && <p>{content.hero.subtitle}</p>}
+            </div>
+            {content.hero.subtitle && (
+              <span className={`${s.sMono} ${s.sCorner} ${s.sCornerL}`}>{content.hero.subtitle}</span>
+            )}
+            {portfolio.length > 0 && (
+              <span className={`${s.sMono} ${s.sCorner} ${s.sCornerR}`}>{labels.portfolio} ↓</span>
+            )}
+          </header>
+        )}
 
         {/* strip-zone — two marquees drifting toward each other */}
         {portfolio.length > 0 && (
@@ -122,26 +136,6 @@ export function ThemeSilence({
               {rowB.length > 0 && <Marquee items={rowB} dir="m2" />}
             </div>
           </section>
-        )}
-
-        {/* genres — categories as numbered, staggered cards */}
-        {hasCategories && (
-          <div className={s.sPad}>
-            <h2 className={s.sSvcHead}>{labels.portfolio}</h2>
-            <div className={s.sSvcGrid}>
-              {groups
-                .filter((g) => g.category)
-                .slice(0, 6)
-                .map((group, index) => (
-                  <div key={group.category} className={s.sSvc}>
-                    <span className={s.sSvcNo}>{O[index]}</span>
-                    <div className={s.sSvcPh} style={bg(group.items[0]?.previewUrl)} />
-                    <h3>{group.category}</h3>
-                    <p className={s.sMono}>{group.items.length}</p>
-                  </div>
-                ))}
-            </div>
-          </div>
         )}
 
         {/* about — inverted quote band */}

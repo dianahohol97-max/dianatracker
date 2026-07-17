@@ -102,6 +102,7 @@ export function SiteRenderer({
           labels={labels}
           langSwitch={langSwitch}
           leadForm={leadForm}
+          night={mode === 'night'}
         />
       </div>
     )
