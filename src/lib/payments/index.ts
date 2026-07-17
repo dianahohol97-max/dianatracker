@@ -14,7 +14,11 @@ let cached: PaymentProvider | null = null
  */
 export function getPayments(): PaymentProvider | null {
   if (cached) return cached
-  const provider = process.env.PAYMENT_PROVIDER ?? 'liqpay'
+  // Explicit PAYMENT_PROVIDER wins; otherwise auto-detect from whichever keys
+  // are present (so configuring MONOBANK_TOKEN alone is enough — no separate
+  // PAYMENT_PROVIDER var required).
+  const hasMono = !!process.env.MONOBANK_TOKEN
+  const provider = process.env.PAYMENT_PROVIDER ?? (hasMono ? 'monobank' : 'liqpay')
   switch (provider) {
     case 'liqpay': {
       const publicKey = process.env.LIQPAY_PUBLIC_KEY

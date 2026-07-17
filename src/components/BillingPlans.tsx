@@ -32,10 +32,11 @@ export function BillingPlans({
 }) {
   const [period, setPeriod] = useState<BillingPeriod>('month')
   const [notice, setNotice] = useState<string | null>(null)
-  const [busy, setBusy] = useState(false)
+  const [busyPlan, setBusyPlan] = useState<string | null>(null)
+  const busy = busyPlan !== null
 
   async function upgrade(planId: string) {
-    setBusy(true)
+    setBusyPlan(planId)
     setNotice(null)
     try {
       const response = await fetch('/api/billing/checkout', {
@@ -72,7 +73,7 @@ export function BillingPlans({
     } catch {
       setNotice(labels.notConfigured)
     } finally {
-      setBusy(false)
+      setBusyPlan(null)
     }
   }
 
@@ -139,7 +140,7 @@ export function BillingPlans({
                     onClick={() => void upgrade(card.id)}
                     className="rounded-full border border-fg px-6 py-2.5 text-xs font-bold uppercase tracking-widest transition-colors hover:bg-fg hover:text-bg disabled:opacity-60"
                   >
-                    {labels.upgrade}
+                    {busyPlan === card.id ? '…' : labels.upgrade}
                   </button>
                 )}
               </div>
@@ -148,7 +149,9 @@ export function BillingPlans({
         })}
       </div>
 
-      {notice && <p className="mt-6 text-sm text-muted">{notice}</p>}
+      {notice && (
+        <p className="mt-6 rounded border border-line bg-line/30 px-4 py-3 text-sm">{notice}</p>
+      )}
     </div>
   )
 }
