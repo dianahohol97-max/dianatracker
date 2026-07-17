@@ -1,6 +1,11 @@
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
-import { deleteGallery, setGalleryPublished, setGalleryTheme } from '@/lib/actions/galleries'
+import {
+  deleteGallery,
+  setGalleryCover,
+  setGalleryPublished,
+  setGalleryTheme,
+} from '@/lib/actions/galleries'
 import { getDictionary } from '@/lib/i18n'
 import { isLocale } from '@/lib/i18n/config'
 import { effectiveGalleryPlan } from '@/lib/plans'
@@ -44,10 +49,17 @@ export default async function ManageGalleryPage({
   // Statistics are a «Плюс»+ feature; selection/favorites are free for all.
   const { data: planRow } = await supabase
     .from('profiles')
-    .select('plan, grace_until')
+    .select('plan, grace_until, watermark_enabled, display_name')
     .eq('user_id', user.id)
-    .single<{ plan: string; grace_until: string | null }>()
+    .single<{
+      plan: string
+      grace_until: string | null
+      watermark_enabled: boolean
+      display_name: string | null
+    }>()
   const ownerPlan = effectiveGalleryPlan(planRow?.plan ?? 'free', planRow?.grace_until)
+  const watermarkText =
+    planRow?.watermark_enabled && planRow.display_name ? planRow.display_name : undefined
 
   const [{ data: assets }, { count: downloadCount }, { data: selections }] = await Promise.all([
     supabase
@@ -184,7 +196,11 @@ export default async function ManageGalleryPage({
       <section className="mt-12">
         <h2 className="font-display text-2xl">{dict.galleryManage.uploadTitle}</h2>
         <div className="mt-6">
-          <Uploader galleryId={gallery.id} dropHint={dict.galleryManage.dropHint} />
+          <Uploader
+            galleryId={gallery.id}
+            dropHint={dict.galleryManage.dropHint}
+            watermarkText={watermarkText}
+          />
         </div>
       </section>
 
@@ -195,8 +211,12 @@ export default async function ManageGalleryPage({
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
             {previews.map(({ asset, url }) => {
               const favoritedBy = favoriteCounts.get(asset.id) ?? 0
+              const isCover = gallery.cover_asset_id === asset.id
               return (
-                <div key={asset.id} className="relative aspect-square overflow-hidden bg-line">
+                <div
+                  key={asset.id}
+                  className="group relative aspect-square overflow-hidden bg-line"
+                >
                   {asset.kind === 'photo' ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -212,6 +232,23 @@ export default async function ManageGalleryPage({
                     <span className="absolute right-2 top-2 bg-bg/90 px-2 py-0.5 text-xs text-accent">
                       ♥ {favoritedBy}
                     </span>
+                  )}
+                  {isCover ? (
+                    <span className="absolute bottom-2 left-2 rounded-full bg-fg px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-bg">
+                      {dict.galleryManage.coverBadge}
+                    </span>
+                  ) : (
+                    <form
+                      action={setGalleryCover.bind(null, locale, gallery.id, asset.id)}
+                      className="absolute bottom-2 left-2 hidden group-hover:block"
+                    >
+                      <button
+                        type="submit"
+                        className="rounded-full bg-bg/95 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-fg hover:text-accent"
+                      >
+                        {dict.galleryManage.setCover}
+                      </button>
+                    </form>
                   )}
                 </div>
               )

@@ -21,7 +21,10 @@ export async function updateDisplayName(locale: Locale, formData: FormData): Pro
 
   const { error } = await supabase
     .from('profiles')
-    .update({ display_name: displayName || null })
+    .update({
+      display_name: displayName || null,
+      watermark_enabled: formData.get('watermark_enabled') === 'on',
+    })
     .eq('user_id', user.id)
   if (error) throw new Error(`Failed to update profile: ${error.message}`)
 

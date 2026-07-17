@@ -53,6 +53,17 @@ export default async function SettingsPage({ params }: { params: { locale: strin
           className="mt-2 border border-line bg-transparent px-4 py-3 outline-none focus:border-fg"
         />
         <p className="mt-2 text-xs text-muted">{dict.settings.displayNameHint}</p>
+
+        <label className="mt-6 flex items-center gap-3 text-sm">
+          <input
+            type="checkbox"
+            name="watermark_enabled"
+            defaultChecked={profile.watermark_enabled}
+          />
+          {dict.settings.watermarkLabel}
+        </label>
+        <p className="mt-1 text-xs text-muted">{dict.settings.watermarkHint}</p>
+
         <button
           type="submit"
           className="mt-6 self-start border border-fg px-8 py-3 text-sm uppercase tracking-widest transition-colors hover:bg-fg hover:text-bg"

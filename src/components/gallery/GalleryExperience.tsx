@@ -23,6 +23,7 @@ export interface GalleryLabels {
   downloadOriginal: string
   favoriteToggle: string
   madeOn: string
+  tip: string
 }
 
 /* ---------- zero-egress zip (streams to disk on Chromium) ---------- */
@@ -90,6 +91,7 @@ export function GalleryExperience({
   items,
   initialFavorites,
   showBadge,
+  tipUrl,
   theme,
   mode,
   labels,
@@ -104,6 +106,7 @@ export function GalleryExperience({
   items: GalleryItem[]
   initialFavorites: string[]
   showBadge: boolean
+  tipUrl: string | null
   theme: ThemeId
   mode: SiteMode
   labels: GalleryLabels
@@ -306,6 +309,13 @@ export function GalleryExperience({
       {/* -------- footer -------- */}
       <footer className={s.foot}>
         {brandName && <div className={s.sig}>{brandName}</div>}
+        {tipUrl && (
+          <div style={{ marginTop: 18 }}>
+            <a className={s.tipBtn} href={tipUrl} target="_blank" rel="noopener noreferrer">
+              ♥ {labels.tip}
+            </a>
+          </div>
+        )}
         {showBadge && (
           <a className={s.badge} href={`/${locale}`}>
             {labels.madeOn}

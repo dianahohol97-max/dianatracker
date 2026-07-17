@@ -191,7 +191,16 @@ async function uploadMultipart(
   }
 }
 
-export function Uploader({ galleryId, dropHint }: { galleryId: string; dropHint: string }) {
+export function Uploader({
+  galleryId,
+  dropHint,
+  watermarkText,
+}: {
+  galleryId: string
+  dropHint: string
+  /** When set, previews get the photographer's name stamped bottom-right. */
+  watermarkText?: string
+}) {
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
   const [items, setItems] = useState<UploadItem[]>([])
@@ -237,7 +246,7 @@ export function Uploader({ galleryId, dropHint }: { galleryId: string; dropHint:
         )
 
         const variants: Record<string, string> = {}
-        for (const rendition of await generateImageVariants(item.file)) {
+        for (const rendition of await generateImageVariants(item.file, watermarkText)) {
           const target = await presign(
             `${rendition.name}.jpg`,
             'image/jpeg',
@@ -274,7 +283,7 @@ export function Uploader({ galleryId, dropHint }: { galleryId: string; dropHint:
         updateItem(item.id, { status: 'error' })
       }
     },
-    [galleryId, presign, updateItem]
+    [galleryId, presign, updateItem, watermarkText]
   )
 
   const startUploads = useCallback(

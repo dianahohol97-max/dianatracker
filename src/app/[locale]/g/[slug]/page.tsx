@@ -119,6 +119,7 @@ export default async function PublicGalleryPage({
             plan: string | null
             site_theme: string | null
             site_mode: string | null
+            tip_link: string | null
           }[]
         | null
     )?.[0] ?? null
@@ -198,6 +199,7 @@ export default async function PublicGalleryPage({
       items={items}
       initialFavorites={initialFavorites}
       showBadge={!ownerPlan.features.brandingRemoval}
+      tipUrl={ownerPlan.features.tips ? (branding?.tip_link ?? null) : null}
       theme={theme}
       mode={mode}
       labels={{
@@ -209,6 +211,7 @@ export default async function PublicGalleryPage({
         downloadOriginal: dict.publicGallery.downloadOriginal,
         favoriteToggle: dict.publicGallery.favoriteToggle,
         madeOn: dict.publicGallery.madeOn,
+        tip: dict.publicGallery.tip,
       }}
     />
   )

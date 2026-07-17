@@ -14,6 +14,7 @@ export interface Profile {
   plan: string
   site_plan: string
   grace_until: string | null
+  watermark_enabled: boolean
   storage_used_bytes: number
   storage_limit_bytes: number
   created_at: string

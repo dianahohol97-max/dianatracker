@@ -48,6 +48,20 @@ export async function createGallery(locale: Locale, formData: FormData): Promise
   redirect(`/${locale}/dashboard/galleries/${data.id}`)
 }
 
+export async function setGalleryCover(
+  locale: Locale,
+  galleryId: string,
+  assetId: string
+): Promise<void> {
+  const { supabase } = await requireUser()
+  const { error } = await supabase
+    .from('galleries')
+    .update({ cover_asset_id: assetId })
+    .eq('id', galleryId)
+  if (error) throw new Error(`Failed to set cover: ${error.message}`)
+  revalidatePath(`/${locale}/dashboard/galleries/${galleryId}`)
+}
+
 /** Gallery style: '' = inherit from the site, else a theme-catalog value. */
 export async function setGalleryTheme(
   locale: Locale,

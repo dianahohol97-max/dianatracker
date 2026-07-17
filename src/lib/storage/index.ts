@@ -1,4 +1,4 @@
-import { R2Provider } from './R2Provider'
+import { B2Provider, R2Provider } from './R2Provider'
 import type { StorageProvider } from './StorageProvider'
 
 let cached: StorageProvider | null = null
@@ -25,6 +25,14 @@ export function getStorage(): StorageProvider {
         accessKeyId: requireEnv('R2_ACCESS_KEY_ID'),
         secretAccessKey: requireEnv('R2_SECRET_ACCESS_KEY'),
         bucket: requireEnv('R2_BUCKET'),
+      })
+      return cached
+    case 'b2':
+      cached = new B2Provider({
+        region: requireEnv('B2_REGION'),
+        keyId: requireEnv('B2_KEY_ID'),
+        applicationKey: requireEnv('B2_APPLICATION_KEY'),
+        bucket: requireEnv('B2_BUCKET'),
       })
       return cached
     default:

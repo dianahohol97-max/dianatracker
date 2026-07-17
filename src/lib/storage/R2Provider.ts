@@ -22,27 +22,32 @@ import type {
 const DEFAULT_UPLOAD_TTL_SECONDS = 10 * 60
 const DEFAULT_READ_TTL_SECONDS = 60 * 60
 
-export interface R2Config {
-  accountId: string
+export interface S3CompatConfig {
+  endpoint: string
+  region: string
   accessKeyId: string
   secretAccessKey: string
   bucket: string
 }
 
 /**
- * Cloudflare R2 implementation (S3-compatible API, zero egress fees).
- * The bucket needs a CORS rule allowing PUT/GET from the app origin —
- * see README "R2 setup".
+ * Any S3-compatible object storage. Concrete providers below only differ in
+ * how the endpoint is built:
+ *  - R2Provider — Cloudflare R2 (zero egress; light tiers live here);
+ *  - B2Provider — Backblaze B2 (3x cheaper storage, zero egress through the
+ *    Bandwidth Alliance CDN; heavy tiers 500 GB+ move here).
+ * The bucket needs a CORS rule allowing PUT/GET from the app origin with
+ * "etag" exposed — see README.
  */
-export class R2Provider implements StorageProvider {
+export class S3CompatProvider implements StorageProvider {
   private readonly client: S3Client
   private readonly bucket: string
 
-  constructor(config: R2Config) {
+  constructor(config: S3CompatConfig) {
     this.bucket = config.bucket
     this.client = new S3Client({
-      region: 'auto',
-      endpoint: `https://${config.accountId}.r2.cloudflarestorage.com`,
+      region: config.region,
+      endpoint: config.endpoint,
       credentials: {
         accessKeyId: config.accessKeyId,
         secretAccessKey: config.secretAccessKey,
@@ -169,5 +174,43 @@ export class R2Provider implements StorageProvider {
       continuationToken = response.IsTruncated ? response.NextContinuationToken : undefined
     } while (continuationToken)
     return objects
+  }
+}
+
+export interface R2Config {
+  accountId: string
+  accessKeyId: string
+  secretAccessKey: string
+  bucket: string
+}
+
+export class R2Provider extends S3CompatProvider {
+  constructor(config: R2Config) {
+    super({
+      endpoint: `https://${config.accountId}.r2.cloudflarestorage.com`,
+      region: 'auto',
+      accessKeyId: config.accessKeyId,
+      secretAccessKey: config.secretAccessKey,
+      bucket: config.bucket,
+    })
+  }
+}
+
+export interface B2Config {
+  region: string // e.g. eu-central-003
+  keyId: string
+  applicationKey: string
+  bucket: string
+}
+
+export class B2Provider extends S3CompatProvider {
+  constructor(config: B2Config) {
+    super({
+      endpoint: `https://s3.${config.region}.backblazeb2.com`,
+      region: config.region,
+      accessKeyId: config.keyId,
+      secretAccessKey: config.applicationKey,
+      bucket: config.bucket,
+    })
   }
 }

@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { getPayments } from '@/lib/payments'
 import {
+  BUNDLE_SITE_DISCOUNT,
   GALLERY_PLANS,
   SITE_PLANS,
   galleryPlanPriceUah,
@@ -59,6 +60,23 @@ export async function POST(request: NextRequest) {
     const plan = SITE_PLANS[body.plan]
     amount = sitePlanPriceUah(plan, body.period)
     description = `Site plan "${plan.id}" (${plan.sites} site(s)), billed per ${body.period}`
+
+    // Бандл «Галерея + Сайт»: −15% на сайт при активній платній підписці
+    // на галереї (applied automatically, no promo codes).
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('plan, grace_until')
+      .eq('user_id', user.id)
+      .single()
+    const paidGallery =
+      profile &&
+      isGalleryPlanId(profile.plan) &&
+      profile.plan !== 'free' &&
+      (!profile.grace_until || new Date(profile.grace_until).getTime() > Date.now())
+    if (paidGallery) {
+      amount = Math.round(amount * (1 - BUNDLE_SITE_DISCOUNT))
+      description += ' (bundle -15%)'
+    }
   } else {
     return NextResponse.json({ error: 'plan_needs_no_checkout' }, { status: 400 })
   }

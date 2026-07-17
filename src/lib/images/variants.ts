@@ -26,7 +26,31 @@ function canvasToJpeg(canvas: HTMLCanvasElement, quality: number): Promise<Blob 
   return new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', quality))
 }
 
-export async function generateImageVariants(file: File): Promise<GeneratedVariant[]> {
+/**
+ * Optional watermark: the photographer's name stamped bottom-right on the
+ * PREVIEW rendition only. Originals and downloads stay untouched — the
+ * watermark exists exactly where clients browse, not where they buy.
+ */
+function stampWatermark(
+  context: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  text: string
+) {
+  const size = Math.max(Math.round(width / 36), 14)
+  context.font = `600 ${size}px -apple-system, "Segoe UI", sans-serif`
+  context.textAlign = 'right'
+  context.textBaseline = 'bottom'
+  context.shadowColor = 'rgba(0,0,0,.45)'
+  context.shadowBlur = size / 3
+  context.fillStyle = 'rgba(255,255,255,.6)'
+  context.fillText(text, width - size, height - size)
+}
+
+export async function generateImageVariants(
+  file: File,
+  watermarkText?: string
+): Promise<GeneratedVariant[]> {
   if (!file.type.startsWith('image/')) return []
 
   let bitmap: ImageBitmap
@@ -41,14 +65,21 @@ export async function generateImageVariants(file: File): Promise<GeneratedVarian
   try {
     for (const target of TARGETS) {
       const scale = target.maxDim / Math.max(bitmap.width, bitmap.height)
-      if (scale >= 1) continue // Original is already small enough — fallback covers it.
+      // A watermarked preview must exist even for small originals, otherwise
+      // the viewer would fall back to the clean original.
+      const mustRender = target.name === 'preview' && !!watermarkText
+      if (scale >= 1 && !mustRender) continue
 
+      const effective = Math.min(scale, 1)
       const canvas = document.createElement('canvas')
-      canvas.width = Math.round(bitmap.width * scale)
-      canvas.height = Math.round(bitmap.height * scale)
+      canvas.width = Math.round(bitmap.width * effective)
+      canvas.height = Math.round(bitmap.height * effective)
       const context = canvas.getContext('2d')
       if (!context) continue
       context.drawImage(bitmap, 0, 0, canvas.width, canvas.height)
+      if (target.name === 'preview' && watermarkText) {
+        stampWatermark(context, canvas.width, canvas.height, watermarkText)
+      }
 
       const blob = await canvasToJpeg(canvas, target.quality)
       if (blob) variants.push({ name: target.name, blob })

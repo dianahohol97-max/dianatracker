@@ -64,6 +64,8 @@ export const en: Dictionary = {
     styleLabel: 'Gallery style',
     styleInherit: 'Same as the site',
     styleSave: 'Save style',
+    setCover: 'Set cover',
+    coverBadge: 'Cover ✓',
     favoritesTitle: 'Client favorites',
     favoritesEmpty:
       'Clients have not favorited anything yet. As soon as they mark photos in the gallery, the list appears here.',
@@ -199,6 +201,9 @@ export const en: Dictionary = {
     displayNameLabel: 'Name or studio name',
     displayNameHint:
       'Clients see this name in your galleries. Our service is never mentioned there.',
+    watermarkLabel: 'Stamp my name on photo previews (watermark)',
+    watermarkHint:
+      'Applied only to viewing copies in the gallery — originals and downloads stay clean.',
     logoLabel: 'Logo',
     logoHint: 'Shown at the top of your public galleries. PNG, JPG, WebP or SVG up to 2 MB.',
     uploadLogo: 'Upload logo',
@@ -261,6 +266,7 @@ export const en: Dictionary = {
     selected: 'selected',
     scrollHint: 'scroll ↓',
     madeOn: 'Made with Proyav',
+    tip: 'Thank the photographer',
     notFound: 'Gallery not found. The link may have expired or the gallery is not published yet.',
   },
 }
