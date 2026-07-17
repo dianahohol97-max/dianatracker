@@ -3,6 +3,14 @@ import type { SiteContent } from '@/lib/site/content'
 import { LeadForm, type LeadFormLabels } from './LeadForm'
 import { ThemeGallery } from './ThemeGallery'
 import { ThemeSilence } from './ThemeSilence'
+import {
+  ThemeAir,
+  ThemeArchive,
+  ThemeFilm,
+  ThemeJournal,
+  ThemeProduction,
+  type ThemeProps,
+} from './ThemeVariants'
 
 export interface PortfolioItem {
   id: string
@@ -102,6 +110,29 @@ export function SiteRenderer({
     return (
       <div style={vars}>
         <ThemeGallery
+          content={content}
+          displayName={displayName}
+          logoUrl={logoUrl}
+          portfolio={portfolio}
+          labels={labels}
+          langSwitch={langSwitch}
+          leadForm={leadForm}
+        />
+      </div>
+    )
+  }
+  const variant: Partial<Record<ThemeId, (p: ThemeProps) => React.ReactElement>> = {
+    povitria: ThemeAir,
+    plivka: ThemeFilm,
+    zhurnal: ThemeJournal,
+    arkhiv: ThemeArchive,
+    prodakshn: ThemeProduction,
+  }
+  const Variant = variant[theme]
+  if (Variant) {
+    return (
+      <div style={vars}>
+        <Variant
           content={content}
           displayName={displayName}
           logoUrl={logoUrl}
