@@ -17,6 +17,14 @@ import { generateImageVariants } from '@/lib/images/variants'
 
 const CONCURRENCY = 3
 
+// Files above the threshold (large videos) go through S3 multipart: parts
+// upload in parallel with per-part retries, so one dropped packet no longer
+// restarts a 1.5 GB transfer from zero.
+const MULTIPART_THRESHOLD = 64 * 1024 * 1024
+const PART_SIZE = 16 * 1024 * 1024
+const PART_CONCURRENCY = 3
+const PART_RETRIES = 3
+
 type FileStatus = 'queued' | 'uploading' | 'done' | 'error'
 
 interface UploadItem {
@@ -61,6 +69,128 @@ function putWithProgress(
   })
 }
 
+async function postJson<T>(url: string, body: unknown): Promise<T> {
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+  if (!response.ok) throw new Error(`${url} ${response.status}`)
+  return (await response.json()) as T
+}
+
+/** PUT one part; resolves with its ETag (needs "etag" in the R2 CORS ExposeHeaders). */
+function putPart(
+  url: string,
+  blob: Blob,
+  onBytes: (uploadedBytes: number) => void
+): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest()
+    xhr.open('PUT', url)
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable) onBytes(event.loaded)
+    }
+    xhr.onload = () => {
+      if (xhr.status < 200 || xhr.status >= 300) {
+        reject(new Error(`part upload ${xhr.status}`))
+        return
+      }
+      const etag = xhr.getResponseHeader('ETag')
+      if (!etag) {
+        reject(new Error('R2 CORS rule must expose the "etag" header (see README)'))
+        return
+      }
+      resolve(etag.replaceAll('"', ''))
+    }
+    xhr.onerror = () => reject(new Error('part network error'))
+    xhr.send(blob)
+  })
+}
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+/**
+ * Multipart upload: create → presign all part URLs → parts in parallel with
+ * exponential-backoff retries → complete (which registers the asset row).
+ * Aborts the R2 upload on unrecoverable failure.
+ */
+async function uploadMultipart(
+  galleryId: string,
+  file: File,
+  contentType: string,
+  onProgress: (fraction: number) => void
+): Promise<void> {
+  const { key, uploadId } = await postJson<{ key: string; uploadId: string }>(
+    '/api/uploads/multipart/create',
+    { galleryId, fileName: file.name, contentType, sizeBytes: file.size }
+  )
+
+  try {
+    const partCount = Math.ceil(file.size / PART_SIZE)
+    const partNumbers = Array.from({ length: partCount }, (_, index) => index + 1)
+    const { urls } = await postJson<{ urls: Record<number, string> }>(
+      '/api/uploads/multipart/part-urls',
+      { galleryId, key, uploadId, partNumbers }
+    )
+
+    const uploadedByPart = new Map<number, number>()
+    const report = () => {
+      let total = 0
+      uploadedByPart.forEach((bytes) => {
+        total += bytes
+      })
+      onProgress(Math.min(total / file.size, 1))
+    }
+
+    const parts: { partNumber: number; etag: string }[] = []
+    const queue = [...partNumbers]
+    const workers = Array.from(
+      { length: Math.min(PART_CONCURRENCY, queue.length) },
+      async () => {
+        for (let partNumber = queue.shift(); partNumber; partNumber = queue.shift()) {
+          const blob = file.slice(
+            (partNumber - 1) * PART_SIZE,
+            Math.min(partNumber * PART_SIZE, file.size)
+          )
+          let lastError: unknown = null
+          for (let attempt = 0; attempt <= PART_RETRIES; attempt++) {
+            if (attempt > 0) await sleep(1000 * 2 ** (attempt - 1))
+            try {
+              const etag = await putPart(urls[partNumber], blob, (bytes) => {
+                uploadedByPart.set(partNumber as number, bytes)
+                report()
+              })
+              parts.push({ partNumber, etag })
+              uploadedByPart.set(partNumber, blob.size)
+              report()
+              lastError = null
+              break
+            } catch (error) {
+              lastError = error
+            }
+          }
+          if (lastError) throw lastError
+        }
+      }
+    )
+    await Promise.all(workers)
+
+    await postJson('/api/uploads/multipart/complete', {
+      galleryId,
+      key,
+      uploadId,
+      parts,
+      contentType,
+      sizeBytes: file.size,
+    })
+  } catch (error) {
+    // Best-effort cleanup; R2 expires stale multipart uploads anyway.
+    void postJson('/api/uploads/multipart/abort', { galleryId, key, uploadId }).catch(() => {})
+    throw error
+  }
+}
+
 export function Uploader({ galleryId, dropHint }: { galleryId: string; dropHint: string }) {
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
@@ -89,6 +219,15 @@ export function Uploader({ galleryId, dropHint }: { galleryId: string; dropHint:
       updateItem(item.id, { status: 'uploading' })
       try {
         const contentType = item.file.type || 'application/octet-stream'
+
+        if (item.file.size > MULTIPART_THRESHOLD) {
+          await uploadMultipart(galleryId, item.file, contentType, (fraction) =>
+            updateItem(item.id, { progress: Math.round(fraction * 100) })
+          )
+          updateItem(item.id, { status: 'done', progress: 100 })
+          return
+        }
+
         const { uploadUrl, key } = await presign(item.file.name, contentType, item.file.size)
 
         // The original dominates the transfer — its PUT drives the bar to 90%,

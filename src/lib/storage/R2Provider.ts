@@ -1,15 +1,21 @@
 import {
+  AbortMultipartUploadCommand,
+  CompleteMultipartUploadCommand,
+  CreateMultipartUploadCommand,
   DeleteObjectsCommand,
   GetObjectCommand,
   ListObjectsV2Command,
   PutObjectCommand,
   S3Client,
+  UploadPartCommand,
 } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import type {
+  MultipartUpload,
   SignedReadUrlOptions,
   StorageObject,
   StorageProvider,
+  UploadedPart,
   UploadUrlOptions,
 } from './StorageProvider'
 
@@ -85,6 +91,60 @@ export class R2Provider implements StorageProvider {
         })
       )
     }
+  }
+
+  async createMultipartUpload(options: UploadUrlOptions): Promise<MultipartUpload> {
+    const response = await this.client.send(
+      new CreateMultipartUploadCommand({
+        Bucket: this.bucket,
+        Key: options.key,
+        ContentType: options.contentType,
+      })
+    )
+    if (!response.UploadId) {
+      throw new Error('R2 did not return an UploadId for the multipart upload')
+    }
+    return { uploadId: response.UploadId, key: options.key }
+  }
+
+  async getPartUploadUrl(
+    key: string,
+    uploadId: string,
+    partNumber: number,
+    expiresInSeconds?: number
+  ): Promise<string> {
+    const command = new UploadPartCommand({
+      Bucket: this.bucket,
+      Key: key,
+      UploadId: uploadId,
+      PartNumber: partNumber,
+    })
+    return getSignedUrl(this.client, command, {
+      expiresIn: expiresInSeconds ?? DEFAULT_UPLOAD_TTL_SECONDS,
+    })
+  }
+
+  async completeMultipartUpload(
+    key: string,
+    uploadId: string,
+    parts: UploadedPart[]
+  ): Promise<void> {
+    await this.client.send(
+      new CompleteMultipartUploadCommand({
+        Bucket: this.bucket,
+        Key: key,
+        UploadId: uploadId,
+        MultipartUpload: {
+          Parts: parts.map((part) => ({ PartNumber: part.partNumber, ETag: part.etag })),
+        },
+      })
+    )
+  }
+
+  async abortMultipartUpload(key: string, uploadId: string): Promise<void> {
+    await this.client.send(
+      new AbortMultipartUploadCommand({ Bucket: this.bucket, Key: key, UploadId: uploadId })
+    )
   }
 
   async list(prefix: string): Promise<StorageObject[]> {

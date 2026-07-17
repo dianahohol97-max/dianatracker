@@ -32,6 +32,16 @@ export interface SignedReadUrlOptions {
   downloadFileName?: string
 }
 
+export interface MultipartUpload {
+  uploadId: string
+  key: string
+}
+
+export interface UploadedPart {
+  partNumber: number
+  etag: string
+}
+
 export interface StorageProvider {
   /** Presigned PUT URL for direct browser → storage upload. */
   getUploadUrl(options: UploadUrlOptions): Promise<{ url: string; key: string }>
@@ -44,4 +54,21 @@ export interface StorageProvider {
 
   /** List objects under a prefix (used for gallery cleanup / reconciliation). */
   list(prefix: string): Promise<StorageObject[]>
+
+  // -- Multipart (large videos): parts go browser → storage directly, like
+  //    everything else; our server only mints URLs and finalizes. -----------
+
+  createMultipartUpload(options: UploadUrlOptions): Promise<MultipartUpload>
+
+  /** Presigned PUT URL for one part of a multipart upload. */
+  getPartUploadUrl(
+    key: string,
+    uploadId: string,
+    partNumber: number,
+    expiresInSeconds?: number
+  ): Promise<string>
+
+  completeMultipartUpload(key: string, uploadId: string, parts: UploadedPart[]): Promise<void>
+
+  abortMultipartUpload(key: string, uploadId: string): Promise<void>
 }
