@@ -7,6 +7,7 @@ import { generateImageVariants } from '@/lib/images/variants'
 import type { SiteContent } from '@/lib/site/content'
 import { THEME_CATALOG } from '@/lib/site/themes'
 import { SiteRenderer, type PortfolioItem, type SiteLabels } from '@/components/site/SiteRenderer'
+import type { LeadFormLabels } from '@/components/site/LeadForm'
 import type { Locale } from '@/lib/i18n/config'
 
 export interface EditorLabels {
@@ -34,6 +35,15 @@ export interface EditorLabels {
   contactInstagram: string
   contactBooking: string
   contactBookingHint: string
+  optionsLegend: string
+  optBilingual: string
+  optBilingualHint: string
+  optLeadForm: string
+  optLeadFormHint: string
+  enLegend: string
+  enHeroTitle: string
+  enHeroSubtitle: string
+  enAboutPlaceholder: string
   save: string
   previewLabel: string
   delete: string
@@ -65,6 +75,7 @@ export function SiteEditor({
   logoUrl,
   portfolio,
   siteLabels,
+  leadFormLabels,
   labels,
 }: {
   locale: Locale
@@ -77,6 +88,7 @@ export function SiteEditor({
   logoUrl: string | null
   portfolio: PortfolioItem[]
   siteLabels: SiteLabels
+  leadFormLabels: LeadFormLabels
   labels: EditorLabels
 }) {
   const router = useRouter()
@@ -94,6 +106,8 @@ export function SiteEditor({
     }))
   )
   const [contact, setContact] = useState(content.contact)
+  const [bilingual, setBilingual] = useState(content.settings.bilingual)
+  const [leadForm, setLeadForm] = useState(content.settings.leadForm)
   const [uploading, setUploading] = useState(0)
 
   const catalogEntry =
@@ -113,8 +127,10 @@ export function SiteEditor({
           .filter((pack) => pack.name),
       },
       contact,
+      en: content.en,
+      settings: { bilingual, leadForm },
     }),
-    [heroTitle, heroSubtitle, aboutText, packs, contact]
+    [heroTitle, heroSubtitle, aboutText, packs, contact, content.en, bilingual, leadForm]
   )
 
   function setPack(index: number, patch: Partial<Pack>) {
@@ -302,6 +318,59 @@ export function SiteEditor({
         </fieldset>
 
         <fieldset className="flex flex-col gap-4 rounded border border-line p-5">
+          <legend className="px-2 text-sm text-muted">{labels.optionsLegend}</legend>
+          <div className="flex flex-col gap-1">
+            <label className="flex items-center gap-3 text-sm">
+              <input
+                type="checkbox"
+                name="opt_bilingual"
+                checked={bilingual}
+                onChange={(event) => setBilingual(event.target.checked)}
+              />
+              {labels.optBilingual}
+            </label>
+            <p className="pl-7 text-xs text-muted">{labels.optBilingualHint}</p>
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="flex items-center gap-3 text-sm">
+              <input
+                type="checkbox"
+                name="opt_lead_form"
+                checked={leadForm}
+                onChange={(event) => setLeadForm(event.target.checked)}
+              />
+              {labels.optLeadForm}
+            </label>
+            <p className="pl-7 text-xs text-muted">{labels.optLeadFormHint}</p>
+          </div>
+        </fieldset>
+
+        <fieldset
+          className={`flex-col gap-3 rounded border border-line p-5 ${bilingual ? 'flex' : 'hidden'}`}
+        >
+          <legend className="px-2 text-sm text-muted">{labels.enLegend}</legend>
+          <input
+            name="en_hero_title"
+            defaultValue={content.en.hero.title}
+            placeholder={labels.enHeroTitle}
+            className={inputClass}
+          />
+          <input
+            name="en_hero_subtitle"
+            defaultValue={content.en.hero.subtitle}
+            placeholder={labels.enHeroSubtitle}
+            className={inputClass}
+          />
+          <textarea
+            name="en_about_text"
+            rows={5}
+            defaultValue={content.en.about.text}
+            placeholder={labels.enAboutPlaceholder}
+            className={inputClass}
+          />
+        </fieldset>
+
+        <fieldset className="flex flex-col gap-4 rounded border border-line p-5">
           <legend className="px-2 text-sm text-muted">{labels.pricingLegend}</legend>
           {[0, 1, 2].map((index) => (
             <div key={index} className="flex flex-col gap-2 rounded border border-line p-3">
@@ -388,6 +457,10 @@ export function SiteEditor({
               logoUrl={logoUrl}
               portfolio={portfolio}
               labels={siteLabels}
+              langSwitch={
+                bilingual ? { current: locale === 'en' ? 'en' : 'uk', hrefUk: '#', hrefEn: '#' } : undefined
+              }
+              leadForm={leadForm ? { handle: null, labels: leadFormLabels } : undefined}
             />
           </div>
         </div>

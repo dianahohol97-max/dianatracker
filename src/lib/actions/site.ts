@@ -53,6 +53,17 @@ export async function saveSite(locale: Locale, formData: FormData): Promise<void
       instagram: str(formData, 'contact_instagram'),
       bookingUrl: str(formData, 'contact_booking_url'),
     },
+    en: {
+      hero: {
+        title: str(formData, 'en_hero_title'),
+        subtitle: str(formData, 'en_hero_subtitle'),
+      },
+      about: { text: str(formData, 'en_about_text') },
+    },
+    settings: {
+      bilingual: formData.get('opt_bilingual') === 'on',
+      leadForm: formData.get('opt_lead_form') === 'on',
+    },
   }
 
   const { error } = await supabase.from('sites').upsert(
@@ -70,4 +81,12 @@ export async function saveSite(locale: Locale, formData: FormData): Promise<void
 
   revalidatePath(`/${locale}/dashboard/site`)
   if (handle) revalidatePath(`/${locale}/s/${handle}`)
+}
+
+/** Removes one lead from the dashboard list; RLS limits it to the owner. */
+export async function deleteSiteLead(locale: Locale, leadId: string): Promise<void> {
+  const { supabase } = await requireUser()
+  const { error } = await supabase.from('site_leads').delete().eq('id', leadId)
+  if (error) throw new Error(`Failed to delete lead: ${error.message}`)
+  revalidatePath(`/${locale}/dashboard/site`)
 }

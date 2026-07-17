@@ -49,7 +49,7 @@ export function generateMetadata({ params }: { params: { locale: string } }): Me
           width: 1200,
           height: 630,
           alt: uk
-            ? 'проЯв — все, що стається після кнопки затвора'
+            ? 'проЯв — усе, що стається після зйомки'
             : 'Proiav — everything after the shutter clicks',
         },
       ],

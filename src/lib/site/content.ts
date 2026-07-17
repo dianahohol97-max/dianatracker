@@ -20,6 +20,17 @@ export interface SiteContent {
     instagram: string
     bookingUrl: string
   }
+  /** Optional English variant of the text blocks (bilingual sites). */
+  en: {
+    hero: { title: string; subtitle: string }
+    about: { text: string }
+  }
+  settings: {
+    /** Show the UA/EN switcher and serve `en` texts on the /en route. */
+    bilingual: boolean
+    /** Render the lead form in the contact block. */
+    leadForm: boolean
+  }
 }
 
 export const EMPTY_CONTENT: SiteContent = {
@@ -27,6 +38,25 @@ export const EMPTY_CONTENT: SiteContent = {
   about: { text: '' },
   pricing: { items: [] },
   contact: { email: '', phone: '', instagram: '', bookingUrl: '' },
+  en: { hero: { title: '', subtitle: '' }, about: { text: '' } },
+  settings: { bilingual: false, leadForm: false },
+}
+
+/**
+ * Content as the visitor should see it: on the English route of a bilingual
+ * site the translated text blocks override the Ukrainian ones (falling back
+ * per-field, so a missing translation never blanks a block).
+ */
+export function localizedSiteContent(content: SiteContent, locale: string): SiteContent {
+  if (locale !== 'en' || !content.settings.bilingual) return content
+  return {
+    ...content,
+    hero: {
+      title: content.en.hero.title || content.hero.title,
+      subtitle: content.en.hero.subtitle || content.hero.subtitle,
+    },
+    about: { text: content.en.about.text || content.about.text },
+  }
 }
 
 /** Tolerant parse of sites.content — missing fields fall back to empty. */
@@ -36,6 +66,12 @@ export function parseSiteContent(value: unknown): SiteContent {
   const about = (v.about ?? {}) as Record<string, unknown>
   const pricing = (v.pricing ?? {}) as Record<string, unknown>
   const contact = (v.contact ?? {}) as Record<string, unknown>
+  const en = (typeof v.en === 'object' && v.en !== null ? v.en : {}) as Record<string, unknown>
+  const enHero = (en.hero ?? {}) as Record<string, unknown>
+  const enAbout = (en.about ?? {}) as Record<string, unknown>
+  const settings = (
+    typeof v.settings === 'object' && v.settings !== null ? v.settings : {}
+  ) as Record<string, unknown>
   const items = Array.isArray(pricing.items) ? pricing.items : []
 
   return {
@@ -64,6 +100,17 @@ export function parseSiteContent(value: unknown): SiteContent {
       phone: typeof contact.phone === 'string' ? contact.phone : '',
       instagram: typeof contact.instagram === 'string' ? contact.instagram : '',
       bookingUrl: typeof contact.bookingUrl === 'string' ? contact.bookingUrl : '',
+    },
+    en: {
+      hero: {
+        title: typeof enHero.title === 'string' ? enHero.title : '',
+        subtitle: typeof enHero.subtitle === 'string' ? enHero.subtitle : '',
+      },
+      about: { text: typeof enAbout.text === 'string' ? enAbout.text : '' },
+    },
+    settings: {
+      bilingual: settings.bilingual === true,
+      leadForm: settings.leadForm === true,
     },
   }
 }

@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { saveSite } from '@/lib/actions/site'
+import { SiteLeads } from '@/components/site-editor/SiteLeads'
 import { getDictionary } from '@/lib/i18n'
 import { isLocale } from '@/lib/i18n/config'
 import { parseSiteContent } from '@/lib/site/content'
@@ -36,25 +37,32 @@ export default async function SiteEditorPage({ params }: { params: { locale: str
   } = await supabase.auth.getUser()
   if (!user) redirect(`/${locale}/login`)
 
-  const [{ data: site }, { data: profile }, { data: portfolioRows }] = await Promise.all([
-    supabase
-      .from('sites')
-      .select('handle, theme, mode, is_published, content')
-      .eq('user_id', user.id)
-      .maybeSingle<SiteRow>(),
-    supabase
-      .from('profiles')
-      .select('display_name, logo_url')
-      .eq('user_id', user.id)
-      .single<{ display_name: string | null; logo_url: string | null }>(),
-    supabase
-      .from('portfolio_assets')
-      .select('id, r2_key, variants')
-      .eq('owner_id', user.id)
-      .order('position')
-      .order('created_at')
-      .returns<PortfolioRow[]>(),
-  ])
+  const [{ data: site }, { data: profile }, { data: portfolioRows }, { data: leadRows }] =
+    await Promise.all([
+      supabase
+        .from('sites')
+        .select('handle, theme, mode, is_published, content')
+        .eq('user_id', user.id)
+        .maybeSingle<SiteRow>(),
+      supabase
+        .from('profiles')
+        .select('display_name, logo_url')
+        .eq('user_id', user.id)
+        .single<{ display_name: string | null; logo_url: string | null }>(),
+      supabase
+        .from('portfolio_assets')
+        .select('id, r2_key, variants')
+        .eq('owner_id', user.id)
+        .order('position')
+        .order('created_at')
+        .returns<PortfolioRow[]>(),
+      supabase
+        .from('site_leads')
+        .select('id, name, contact, message, created_at')
+        .eq('site_user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(100),
+    ])
 
   const storage = getStorage()
   const logoUrl = profile?.logo_url
@@ -119,6 +127,15 @@ export default async function SiteEditorPage({ params }: { params: { locale: str
           contacts: dict.publicSite.contacts,
           book: dict.publicSite.book,
         }}
+        leadFormLabels={{
+          title: dict.publicSite.leadTitle,
+          name: dict.publicSite.leadName,
+          contact: dict.publicSite.leadContact,
+          message: dict.publicSite.leadMessage,
+          send: dict.publicSite.leadSend,
+          sent: dict.publicSite.leadSent,
+          error: dict.publicSite.leadError,
+        }}
         labels={{
           publish: dict.site.publish,
           handleLabel: dict.site.handleLabel,
@@ -144,8 +161,27 @@ export default async function SiteEditorPage({ params }: { params: { locale: str
           contactInstagram: dict.site.contactInstagram,
           contactBooking: dict.site.contactBooking,
           contactBookingHint: dict.site.contactBookingHint,
+          optionsLegend: dict.site.optionsLegend,
+          optBilingual: dict.site.optBilingual,
+          optBilingualHint: dict.site.optBilingualHint,
+          optLeadForm: dict.site.optLeadForm,
+          optLeadFormHint: dict.site.optLeadFormHint,
+          enLegend: dict.site.enLegend,
+          enHeroTitle: dict.site.enHeroTitle,
+          enHeroSubtitle: dict.site.enHeroSubtitle,
+          enAboutPlaceholder: dict.site.enAboutPlaceholder,
           save: dict.site.save,
           previewLabel: dict.site.previewLabel,
+          delete: dict.common.delete,
+        }}
+      />
+
+      <SiteLeads
+        locale={locale}
+        leads={leadRows ?? []}
+        labels={{
+          title: dict.site.leadsTitle,
+          empty: dict.site.leadsEmpty,
           delete: dict.common.delete,
         }}
       />
