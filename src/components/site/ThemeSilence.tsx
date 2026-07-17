@@ -4,11 +4,16 @@ import { groupPortfolio, type LangSwitch, type PortfolioItem, type SiteLabels } 
 import s from './SiteThemes.module.css'
 
 const RATIOS = [s.r34, s.r43, s.r11]
+const O = ['О1', 'О2', 'О3', 'О4', 'О5', 'О6']
+
+function bg(url: string | null | undefined): React.CSSProperties | undefined {
+  return url ? { backgroundImage: `url("${url}")` } : undefined
+}
 
 /**
- * One infinitely-scrolling row. The items are laid out twice so the CSS
+ * One infinitely-scrolling row: items laid out twice so the CSS
  * translateX(-50%) loops seamlessly; aspect ratios cycle for the varied,
- * editorial feel of the artifact.
+ * editorial rhythm of the reference.
  */
 function Marquee({ items, dir }: { items: PortfolioItem[]; dir: 'm1' | 'm2' }) {
   if (items.length === 0) return null
@@ -19,7 +24,7 @@ function Marquee({ items, dir }: { items: PortfolioItem[]; dir: 'm1' | 'm2' }) {
         <div
           key={`${item.id}-${index}`}
           className={`${s.cell} ${RATIOS[index % RATIOS.length]}`}
-          style={item.previewUrl ? { backgroundImage: `url("${item.previewUrl}")` } : undefined}
+          style={bg(item.previewUrl)}
         />
       ))}
     </div>
@@ -27,11 +32,10 @@ function Marquee({ items, dir }: { items: PortfolioItem[]; dir: 'm1' | 'm2' }) {
 }
 
 /**
- * «Тиша» / «Опівніч» — the flagship layout: a full-bleed hero with a centred
- * caps-serif title, moving grayscale portfolio marquees, an inverted italic
- * quote band for the bio, numbered pricing and a centred contact block.
- * Colours/fonts come from the --site-* vars on the wrapper; this file owns
- * the structure.
+ * «Тиша» / «Опівніч» — the flagship, built to the design demo: full-bleed
+ * hero, two portfolio marquees drifting toward each other, numbered genre
+ * cards (from categories), an inverted quote band for the bio, a staggered
+ * catalogue grid with index captions, and an about block with mono labels.
  */
 export function ThemeSilence({
   content,
@@ -52,17 +56,18 @@ export function ThemeSilence({
 }) {
   const brand = displayName ?? ''
   const heroImg = portfolio[0]?.previewUrl ?? null
-  const gridItems = heroImg ? portfolio.slice(1) : portfolio
-  const groups = groupPortfolio(gridItems)
+  const groups = groupPortfolio(portfolio)
   const hasCategories = groups.some((group) => group.category !== null)
+  const rowA = portfolio.filter((_, i) => i % 2 === 0)
+  const rowB = portfolio.filter((_, i) => i % 2 === 1)
 
   return (
     <div className={s.silence}>
-      <div style={{ maxWidth: 1180, margin: '0 auto' }}>
+      <div style={{ maxWidth: 1200, margin: '0 auto' }}>
         {/* nav */}
         <nav className={`${s.sNav} ${s.sPad}`}>
           <span className={s.sMono}>
-            <a href="#portfolio">{labels.portfolio}</a>
+            <a href="#catalog">{labels.portfolio}</a>
             {' · '}
             <a href="#about">{labels.about}</a>
           </span>
@@ -79,16 +84,10 @@ export function ThemeSilence({
             <a href="#contact">{labels.contacts}</a>
             {langSwitch && (
               <span className={s.sLang}>
-                <a
-                  href={langSwitch.hrefUk}
-                  style={{ opacity: langSwitch.current === 'uk' ? 1 : 0.5 }}
-                >
+                <a href={langSwitch.hrefUk} style={{ opacity: langSwitch.current === 'uk' ? 1 : 0.5 }}>
                   UA
                 </a>
-                <a
-                  href={langSwitch.hrefEn}
-                  style={{ opacity: langSwitch.current === 'en' ? 1 : 0.5 }}
-                >
+                <a href={langSwitch.hrefEn} style={{ opacity: langSwitch.current === 'en' ? 1 : 0.5 }}>
                   EN
                 </a>
               </span>
@@ -98,56 +97,83 @@ export function ThemeSilence({
 
         {/* full-bleed hero */}
         <header className={s.sHero}>
-          <div
-            className={s.sHeroImg}
-            style={heroImg ? { backgroundImage: `url("${heroImg}")` } : undefined}
-          />
+          <div className={s.sHeroImg} style={bg(heroImg)} />
           <div className={s.sHeroText}>
             <h1>{content.hero.title || brand}</h1>
             {content.hero.subtitle && <p>{content.hero.subtitle}</p>}
           </div>
+          {content.hero.subtitle && (
+            <span className={`${s.sMono} ${s.sCorner} ${s.sCornerL}`}>{content.hero.subtitle}</span>
+          )}
           {portfolio.length > 0 && (
             <span className={`${s.sMono} ${s.sCorner} ${s.sCornerR}`}>{labels.portfolio} ↓</span>
           )}
         </header>
 
-        {/* portfolio — grouped into labeled collections */}
+        {/* strip-zone — two marquees drifting toward each other */}
         {portfolio.length > 0 && (
-          <div className={s.sPad}>
-            <div className={s.sLabels}>
+          <section style={{ padding: 'clamp(40px, 7vw, 80px) 0 0' }}>
+            <div className={`${s.sLabels} ${s.sPad}`} style={{ margin: '0 auto 20px' }}>
               <span className={s.sMono}>{labels.portfolio}</span>
               <span className={s.sMono}>{portfolio.length}</span>
             </div>
-            <div id="portfolio">
-              {groups.map((group) => (
-                <section key={group.category ?? '_'} style={{ marginBottom: 28 }}>
-                  {hasCategories && (
-                    <span className={s.sMono} style={{ display: 'block', margin: '0 0 12px' }}>
-                      {group.category ?? labels.portfolio}
-                    </span>
-                  )}
-                  <div className={s.sMarquees}>
-                    {/* Two rows drifting toward each other — the artifact
-                        signature. Split the group's photos between them. */}
-                    <Marquee items={group.items.filter((_, i) => i % 2 === 0)} dir="m1" />
-                    {group.items.length > 2 && (
-                      <Marquee items={group.items.filter((_, i) => i % 2 === 1)} dir="m2" />
-                    )}
+            <div className={s.sMarquees}>
+              <Marquee items={rowA} dir="m1" />
+              {rowB.length > 0 && <Marquee items={rowB} dir="m2" />}
+            </div>
+          </section>
+        )}
+
+        {/* genres — categories as numbered, staggered cards */}
+        {hasCategories && (
+          <div className={s.sPad}>
+            <h2 className={s.sSvcHead}>{labels.portfolio}</h2>
+            <div className={s.sSvcGrid}>
+              {groups
+                .filter((g) => g.category)
+                .slice(0, 6)
+                .map((group, index) => (
+                  <div key={group.category} className={s.sSvc}>
+                    <span className={s.sSvcNo}>{O[index]}</span>
+                    <div className={s.sSvcPh} style={bg(group.items[0]?.previewUrl)} />
+                    <h3>{group.category}</h3>
+                    <p className={s.sMono}>{group.items.length}</p>
                   </div>
-                </section>
-              ))}
+                ))}
             </div>
           </div>
         )}
 
         {/* about — inverted quote band */}
         {content.about.text && (
-          <section id="about" className={s.sBand}>
+          <section className={s.sBand}>
             <blockquote>{content.about.text}</blockquote>
           </section>
         )}
 
-        {/* pricing — numbered staggered */}
+        {/* catalogue — staggered grid with index captions */}
+        {portfolio.length > 0 && (
+          <div className={s.sPad}>
+            <span className={s.sMono} style={{ display: 'block', margin: '0 0 18px' }}>
+              {labels.portfolio}
+            </span>
+            <div id="catalog" className={s.sGrid}>
+              {portfolio.map((item, index) => (
+                <figure key={item.id} className={s.sWork}>
+                  <div className={s.sWorkImg} style={bg(item.previewUrl)} />
+                  <figcaption className={s.sWorkCap}>
+                    <span className={`${s.sMono} ${s.sWorkIdx}`}>
+                      ({String(index + 1).padStart(3, '0')})
+                    </span>
+                    {item.category && <span className={s.sWorkName}>{item.category}</span>}
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* pricing */}
         {content.pricing.items.length > 0 && (
           <div className={s.sPad}>
             <h2 id="pricing" className={s.sSvcHead}>
@@ -172,42 +198,65 @@ export function ThemeSilence({
           </div>
         )}
 
-        {/* contact */}
+        {/* about — mono labels + contacts */}
         <div className={s.sPad}>
-          <section id="contact" className={s.sContact}>
-            <p className={s.sMono} style={{ marginBottom: 18 }}>
-              {labels.contacts}
-            </p>
-            <div className={s.sContactRow}>
+          <section id="about" className={s.sAbout}>
+            <div className={s.sAboutLabels}>
               {content.contact.email && (
-                <a className={s.sEmail} href={`mailto:${content.contact.email}`}>
-                  {content.contact.email}
-                </a>
-              )}
-              {content.contact.phone && (
-                <a href={`tel:${content.contact.phone}`} style={{ color: 'inherit', fontSize: 15 }}>
-                  {content.contact.phone}
-                </a>
+                <div>
+                  <span className={s.sMono}>{labels.contacts}</span>
+                  <a className="val" href={`mailto:${content.contact.email}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                    {content.contact.email}
+                  </a>
+                </div>
               )}
               {content.contact.instagram && (
-                <a
-                  className={s.sMono}
-                  href={`https://instagram.com/${content.contact.instagram.replace(/^@/, '')}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ color: 'var(--site-fg)', textDecoration: 'underline', textUnderlineOffset: 3 }}
-                >
-                  @{content.contact.instagram.replace(/^@/, '')}
-                </a>
+                <div>
+                  <span className={s.sMono}>Instagram</span>
+                  <a
+                    className="val"
+                    href={`https://instagram.com/${content.contact.instagram.replace(/^@/, '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: 'inherit', textDecoration: 'none' }}
+                  >
+                    @{content.contact.instagram.replace(/^@/, '')}
+                  </a>
+                </div>
+              )}
+              {content.contact.phone && (
+                <div>
+                  <span className={s.sMono}>{labels.book}</span>
+                  <a className="val" href={`tel:${content.contact.phone}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                    {content.contact.phone}
+                  </a>
+                </div>
+              )}
+            </div>
+            <div id="contact" className={s.sAboutText}>
+              {content.hero.subtitle && (
+                <p style={{ fontStyle: 'italic' }}>{content.hero.subtitle}</p>
               )}
               {content.contact.bookingUrl && (
                 <a className={s.sBook} href={content.contact.bookingUrl}>
                   {labels.book}
                 </a>
               )}
+              {leadForm && <LeadForm handle={leadForm.handle} labels={leadForm.labels} />}
             </div>
-            {leadForm && <LeadForm handle={leadForm.handle} labels={leadForm.labels} />}
           </section>
+        </div>
+
+        {/* foot */}
+        <div className={s.sPad}>
+          <div className={s.sFoot}>
+            <span className={s.sMono}>{brand}</span>
+            {content.contact.bookingUrl && (
+              <a className={s.sMono} href={content.contact.bookingUrl}>
+                {labels.book} →
+              </a>
+            )}
+          </div>
         </div>
       </div>
     </div>
