@@ -6,8 +6,14 @@ import { isLocale } from '@/lib/i18n/config'
 import { getStorage } from '@/lib/storage'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { CopyLinkButton } from '@/components/CopyLinkButton'
+import { ExportFavoritesButton } from '@/components/ExportFavoritesButton'
 import { Uploader } from '@/components/Uploader'
 import type { Asset, Gallery } from '@/lib/types'
+
+/** Original filename as the client knows it: r2 basename minus the uuid- prefix. */
+function assetFileName(asset: Asset): string {
+  return (asset.r2_key.split('/').pop() ?? asset.id).replace(/^[0-9a-f-]{37}/, '')
+}
 
 export const dynamic = 'force-dynamic'
 
@@ -49,15 +55,17 @@ export default async function ManageGalleryPage({
       .eq('type', 'download'),
     supabase
       .from('selections')
-      .select('asset_id, kind')
+      .select('asset_id, kind, client_token')
       .eq('gallery_id', gallery.id)
-      .returns<{ asset_id: string; kind: string }[]>(),
+      .returns<{ asset_id: string; kind: string; client_token: string }[]>(),
   ])
 
   const favoriteCounts = new Map<string, number>()
+  const favoriteClients = new Set<string>()
   for (const selection of selections ?? []) {
     if (selection.kind !== 'favorite') continue
     favoriteCounts.set(selection.asset_id, (favoriteCounts.get(selection.asset_id) ?? 0) + 1)
+    favoriteClients.add(selection.client_token)
   }
   const totalFavorites = [...favoriteCounts.values()].reduce((sum, n) => sum + n, 0)
 
@@ -160,6 +168,44 @@ export default async function ManageGalleryPage({
               )
             })}
           </div>
+        )}
+      </section>
+
+      <section className="mt-16 border-t border-line pt-10">
+        <h2 className="font-display text-2xl">{dict.galleryManage.favoritesTitle}</h2>
+        {totalFavorites === 0 ? (
+          <p className="mt-4 max-w-xl leading-relaxed text-muted">
+            {dict.galleryManage.favoritesEmpty}
+          </p>
+        ) : (
+          <>
+            <div className="mt-4 flex flex-wrap items-center gap-4">
+              <span className="text-sm text-muted">
+                {dict.galleryManage.statsFavorites}: {totalFavorites} ·{' '}
+                {dict.galleryManage.favoritesClients}: {favoriteClients.size}
+              </span>
+              <ExportFavoritesButton
+                fileNames={previews
+                  .filter(({ asset }) => favoriteCounts.has(asset.id))
+                  .map(({ asset }) => assetFileName(asset))}
+                label={dict.galleryManage.exportFavorites}
+                copiedLabel={dict.galleryManage.exportCopied}
+              />
+            </div>
+            <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-6">
+              {previews
+                .filter(({ asset }) => favoriteCounts.has(asset.id))
+                .map(({ asset, url }) => (
+                  <div key={asset.id} className="relative aspect-square overflow-hidden bg-line">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={url} alt="" loading="lazy" className="h-full w-full object-cover" />
+                    <span className="absolute right-2 top-2 bg-bg/90 px-2 py-0.5 text-xs text-accent">
+                      ♥ {favoriteCounts.get(asset.id)}
+                    </span>
+                  </div>
+                ))}
+            </div>
+          </>
         )}
       </section>
 

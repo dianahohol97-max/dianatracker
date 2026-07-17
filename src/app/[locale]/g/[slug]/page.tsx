@@ -91,9 +91,21 @@ export default async function PublicGalleryPage({
     .order('created_at')
     .returns<Asset[]>()
 
+  // Photographer's branding — the only identity shown on the page.
+  const { data: brandingData } = await supabase.rpc('get_gallery_branding', {
+    gallery_slug: gallery.slug,
+  })
+  const brandingRows = brandingData as
+    | { display_name: string | null; logo_key: string | null }[]
+    | null
+  const branding = brandingRows?.[0] ?? null
+
   // Presigned preview URLs, generated server-side; the browser loads media
   // straight from R2. Falls back to the original until variants exist.
   const storage = getStorage()
+  const logoUrl = branding?.logo_key
+    ? await storage.getSignedReadUrl(branding.logo_key, { expiresInSeconds: 60 * 60 })
+    : null
   const items: GridItem[] = await Promise.all(
     (assets ?? []).map(async (asset) => ({
       id: asset.id,
@@ -126,6 +138,15 @@ export default async function PublicGalleryPage({
   return (
     <main className="mx-auto max-w-6xl px-4 py-16 sm:px-8">
       <header className="mb-16 text-center">
+        {logoUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={logoUrl} alt={branding?.display_name ?? ''} className="mx-auto mb-6 max-h-14 w-auto" />
+        )}
+        {branding?.display_name && !logoUrl && (
+          <p className="mb-6 text-xs uppercase tracking-[0.3em] text-muted">
+            {branding.display_name}
+          </p>
+        )}
         <h1 className="font-display text-4xl tracking-tight sm:text-5xl">{gallery.title}</h1>
         {gallery.event_date && (
           <p className="mt-4 text-sm uppercase tracking-widest text-muted">

@@ -1,0 +1,81 @@
+import Link from 'next/link'
+import { notFound, redirect } from 'next/navigation'
+import { updateDisplayName } from '@/lib/actions/profile'
+import { getDictionary } from '@/lib/i18n'
+import { isLocale } from '@/lib/i18n/config'
+import { getStorage } from '@/lib/storage'
+import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { LogoUploader } from '@/components/LogoUploader'
+import type { Profile } from '@/lib/types'
+
+export const dynamic = 'force-dynamic'
+
+export default async function SettingsPage({ params }: { params: { locale: string } }) {
+  if (!isLocale(params.locale)) notFound()
+  const locale = params.locale
+  const dict = await getDictionary(locale)
+
+  const supabase = createSupabaseServerClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) redirect(`/${locale}/login`)
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('user_id', user.id)
+    .single<Profile>()
+  if (!profile) notFound()
+
+  const logoUrl = profile.logo_url
+    ? await getStorage().getSignedReadUrl(profile.logo_url, { expiresInSeconds: 60 * 60 })
+    : null
+
+  const saveAction = updateDisplayName.bind(null, locale)
+
+  return (
+    <main className="mx-auto max-w-xl px-6 py-16">
+      <Link href={`/${locale}/dashboard`} className="text-sm text-muted hover:text-fg">
+        ← {dict.dashboard.title}
+      </Link>
+
+      <h1 className="mt-6 font-display text-4xl">{dict.settings.title}</h1>
+
+      <form action={saveAction} className="mt-10 flex flex-col">
+        <label className="text-sm text-muted" htmlFor="display_name">
+          {dict.settings.displayNameLabel}
+        </label>
+        <input
+          id="display_name"
+          name="display_name"
+          defaultValue={profile.display_name ?? ''}
+          className="mt-2 border border-line bg-transparent px-4 py-3 outline-none focus:border-fg"
+        />
+        <p className="mt-2 text-xs text-muted">{dict.settings.displayNameHint}</p>
+        <button
+          type="submit"
+          className="mt-6 self-start border border-fg px-8 py-3 text-sm uppercase tracking-widest transition-colors hover:bg-fg hover:text-bg"
+        >
+          {dict.settings.save}
+        </button>
+      </form>
+
+      <section className="mt-14 border-t border-line pt-10">
+        <h2 className="text-sm text-muted">{dict.settings.logoLabel}</h2>
+        {logoUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={logoUrl} alt="" className="mt-4 max-h-16 w-auto" />
+        )}
+        <div className="mt-4">
+          <LogoUploader
+            locale={locale}
+            buttonLabel={dict.settings.uploadLogo}
+            errorLabel={dict.settings.uploadError}
+          />
+        </div>
+        <p className="mt-2 max-w-md text-xs text-muted">{dict.settings.logoHint}</p>
+      </section>
+    </main>
+  )
+}

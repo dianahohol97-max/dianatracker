@@ -47,6 +47,18 @@ export default async function DashboardPage({ params }: { params: { locale: stri
               {formatBytes(profile.storage_limit_bytes)}
             </span>
           )}
+          <Link
+            href={`/${locale}/dashboard/billing`}
+            className="text-sm text-muted underline hover:text-fg"
+          >
+            {dict.dashboard.billingLink}
+          </Link>
+          <Link
+            href={`/${locale}/dashboard/settings`}
+            className="text-sm text-muted underline hover:text-fg"
+          >
+            {dict.dashboard.settingsLink}
+          </Link>
           <form action={signOutWithLocale}>
             <button type="submit" className="text-sm text-muted underline hover:text-fg">
               {dict.common.signOut}
