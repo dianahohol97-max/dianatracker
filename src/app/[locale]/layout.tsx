@@ -4,8 +4,9 @@ import { isLocale, locales } from '@/lib/i18n/config'
 import '@/app/globals.css'
 
 export const metadata: Metadata = {
-  title: 'Галереї для фотографів',
-  description: 'Онлайн-галереї для передачі зйомок клієнтам.',
+  title: 'Прояв — галереї, сайти і бронювання для фотографів',
+  description:
+    'Передавайте зйомки клієнтам у красивих галереях, збирайте персональний сайт і приймайте бронювання з оплатою напряму на вашу картку.',
 }
 
 export function generateStaticParams() {

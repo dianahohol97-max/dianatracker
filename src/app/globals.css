@@ -3,18 +3,61 @@
 @tailwind utilities;
 
 /* ---------------------------------------------------------------------------
+   Brand fonts — self-hosted variable subsets (latin + cyrillic), no
+   build-time network dependency. Unbounded carries the platform's display
+   voice; Manrope is the UI/body face.
+--------------------------------------------------------------------------- */
+@font-face {
+  font-family: 'Unbounded';
+  font-style: normal;
+  font-weight: 300 900;
+  font-display: swap;
+  src: url('/fonts/unbounded-cyrillic.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Unbounded';
+  font-style: normal;
+  font-weight: 300 900;
+  font-display: swap;
+  src: url('/fonts/unbounded-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url('/fonts/manrope-cyrillic.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url('/fonts/manrope-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* ---------------------------------------------------------------------------
    Design tokens — the single source of truth for the visual language.
-   Vigbo-like direction: editorial, image-first, near-monochrome palette with
-   one accent, generous whitespace, large display type.
+   Platform brand: cool off-white, deep ink, electric cobalt accent,
+   Unbounded display + Manrope body.
+   NOTE: --font-display stays a serif — it styles PHOTOGRAPHER-facing public
+   pages (galleries), which keep their editorial voice, not the brand's.
 --------------------------------------------------------------------------- */
 :root {
-  --color-bg: #fbfaf8;
-  --color-fg: #17161a;
-  --color-muted: #8a8894;
-  --color-accent: #b4552d;
-  --color-border: #e5e2dc;
+  --color-bg: #f4f4f1;
+  --color-fg: #0d0c0a;
+  --color-muted: #6f6d66;
+  --color-accent: #2f55ff;
+  --color-accent-deep: #1f3fe0;
+  --color-accent-soft: #8fa2ff;
+  --color-border: #e5e3dc;
+  --color-coal: #12110e;
 
-  --radius: 2px;
+  --radius: 12px;
 
   --space-1: 0.25rem;
   --space-2: 0.5rem;
@@ -27,7 +70,8 @@
   --space-24: 6rem;
 
   --font-display: 'Georgia', 'Times New Roman', serif;
-  --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+  --font-brand: 'Unbounded', system-ui, sans-serif;
+  --font-body: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
     'Helvetica Neue', Arial, sans-serif;
 }
 

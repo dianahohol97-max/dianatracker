@@ -9,13 +9,17 @@ const config: Config = {
         fg: 'var(--color-fg)',
         muted: 'var(--color-muted)',
         accent: 'var(--color-accent)',
+        'accent-deep': 'var(--color-accent-deep)',
+        'accent-soft': 'var(--color-accent-soft)',
         line: 'var(--color-border)',
+        coal: 'var(--color-coal)',
       },
       borderRadius: {
         DEFAULT: 'var(--radius)',
       },
       fontFamily: {
         display: 'var(--font-display)',
+        brand: 'var(--font-brand)',
         body: 'var(--font-body)',
       },
     },
