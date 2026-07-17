@@ -177,6 +177,11 @@ export function ThemeAir(props: ThemeProps) {
               </div>
             </div>
           )}
+          <div className={s.airCta}>
+            <a className={s.airBtn} href={content.contact.bookingUrl || '#contact'}>
+              {labels.book}
+            </a>
+          </div>
         </header>
 
         {portfolio.length > 3 && (
@@ -204,7 +209,12 @@ export function ThemeAir(props: ThemeProps) {
           </div>
         )}
 
-        {content.about.text && <p id="about" className={s.airQuote}>{content.about.text}</p>}
+        {content.about.text && (
+          <p id="about" className={s.airQuote}>
+            {content.about.text}
+            {brand && <small>{brand}</small>}
+          </p>
+        )}
         <Tail {...props} />
       </div>
     </div>
@@ -384,7 +394,7 @@ export function ThemeArchive(props: ThemeProps) {
                     <div className={s.tImg} style={bg(item.previewUrl)} />
                     <figcaption>
                       <span className="no">{String(index + 1).padStart(3, '0')}</span>
-                      {group.category ?? labels.portfolio}
+                      {item.caption || group.category || labels.portfolio}
                     </figcaption>
                   </figure>
                 ))}
@@ -403,6 +413,7 @@ export function ThemeProduction(props: ThemeProps) {
   const { content, displayName, portfolio, labels, langSwitch } = props
   const brand = displayName ?? ''
   const groups = groupPortfolio(portfolio)
+  const categories = groups.map((g) => g.category).filter((c): c is string => !!c)
 
   return (
     <div className={s.tWrap}>
@@ -426,7 +437,7 @@ export function ThemeProduction(props: ThemeProps) {
               group.items.map((item, index) => (
                 <div key={item.id} className={s.prRow}>
                   <div className={s.tImg} style={bg(item.previewUrl)} />
-                  <span className="ttl">{group.category ?? labels.portfolio}</span>
+                  <span className="ttl">{item.caption || group.category || labels.portfolio}</span>
                   <span className="yr">{String(index + 1).padStart(3, '0')}</span>
                 </div>
               ))
@@ -434,72 +445,80 @@ export function ThemeProduction(props: ThemeProps) {
           </div>
         )}
 
-        {(content.about.text || content.pricing.items.length > 0) && (
-          <div className={s.prPanel}>
-            {content.about.text && <h2>{content.about.text}</h2>}
-            {content.pricing.items.length > 0 && (
-              <div className="cols">
-                {content.pricing.items.map((item) => (
-                  <div key={item.name}>
-                    <h4>
-                      {item.name}
-                      {item.price ? ` — ${item.price}` : ''}
-                    </h4>
-                    <ul>
-                      {item.includes.map((line) => (
-                        <li key={line}>{line}</li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </div>
-            )}
+        {(content.about.text ||
+          content.contact.email ||
+          content.contact.phone ||
+          content.pricing.items.length > 0 ||
+          content.contact.instagram) && (
+          <div id="contact" className={s.prPanel}>
+            {content.about.text && <p>{content.about.text}</p>}
+            <div className="cols">
+              {(content.contact.email || content.contact.phone) && (
+                <div>
+                  <h5>{labels.contacts}</h5>
+                  <ul>
+                    {content.contact.email && (
+                      <li>
+                        <a href={`mailto:${content.contact.email}`}>{content.contact.email}</a>
+                      </li>
+                    )}
+                    {content.contact.phone && (
+                      <li>
+                        <a href={`tel:${content.contact.phone}`}>{content.contact.phone}</a>
+                      </li>
+                    )}
+                  </ul>
+                </div>
+              )}
+              {content.pricing.items.length > 0 && (
+                <div>
+                  <h5>{labels.pricing}</h5>
+                  <ul>
+                    {content.pricing.items.map((item) => (
+                      <li key={item.name}>{item.price ? `${item.name} — ${item.price}` : item.name}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {categories.length > 0 && (
+                <div>
+                  <h5>{labels.portfolio}</h5>
+                  <ul>
+                    {categories.map((c) => (
+                      <li key={c}>{c}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {(content.contact.instagram || content.contact.bookingUrl) && (
+                <div>
+                  <h5>Instagram</h5>
+                  <ul>
+                    {content.contact.instagram && (
+                      <li>
+                        <a
+                          href={`https://instagram.com/${content.contact.instagram.replace(/^@/, '')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          @{content.contact.instagram.replace(/^@/, '')}
+                        </a>
+                      </li>
+                    )}
+                    {content.contact.bookingUrl && (
+                      <li>
+                        <a href={content.contact.bookingUrl}>{labels.book}</a>
+                      </li>
+                    )}
+                  </ul>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
-        <section
-          id="contact"
-          style={{
-            marginTop: 32,
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: '8px 28px',
-            alignItems: 'baseline',
-            fontSize: 13,
-            textTransform: 'uppercase',
-            letterSpacing: '0.06em',
-          }}
-        >
-          {content.contact.email && (
-            <a href={`mailto:${content.contact.email}`} style={{ color: 'inherit', textDecoration: 'none' }}>
-              {content.contact.email}
-            </a>
-          )}
-          {content.contact.phone && (
-            <a href={`tel:${content.contact.phone}`} style={{ color: 'inherit', textDecoration: 'none' }}>
-              {content.contact.phone}
-            </a>
-          )}
-          {content.contact.bookingUrl && (
-            <a
-              href={content.contact.bookingUrl}
-              style={{
-                marginLeft: 'auto',
-                border: '1px solid var(--site-fg)',
-                padding: '11px 26px',
-                fontSize: 11,
-                fontWeight: 700,
-                letterSpacing: '0.1em',
-                color: 'inherit',
-                textDecoration: 'none',
-              }}
-            >
-              {labels.book}
-            </a>
-          )}
-        </section>
         {props.leadForm && (
-          <div style={{ marginTop: 8 }}>
+          <div style={{ marginTop: 32 }}>
             <LeadForm handle={props.leadForm.handle} labels={props.leadForm.labels} />
           </div>
         )}

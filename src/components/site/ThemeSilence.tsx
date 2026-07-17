@@ -159,7 +159,9 @@ export function ThemeSilence({
                     <span className={`${s.sMono} ${s.sWorkIdx}`}>
                       ({String(index + 1).padStart(3, '0')})
                     </span>
-                    {item.category && <span className={s.sWorkName}>{item.category}</span>}
+                    {(item.caption || item.category) && (
+                      <span className={s.sWorkName}>{item.caption || item.category}</span>
+                    )}
                   </figcaption>
                 </figure>
               ))}

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import {
   deletePortfolioAsset,
   reorderPortfolio,
+  setPortfolioCaption,
   setPortfolioCategory,
   setPortfolioVisibility,
 } from '@/lib/actions/portfolio'
@@ -39,6 +40,7 @@ export interface EditorLabels {
   portfolioShow: string
   portfolioHide: string
   portfolioCategory: string
+  portfolioCaption: string
   portfolioUploadTo: string
   portfolioCategoryEg: string
   portfolioUncategorized: string
@@ -171,6 +173,15 @@ export function SiteEditor({
   function persistCategory(id: string, category: string) {
     startTransition(async () => {
       await setPortfolioCategory(locale, id, category)
+    })
+  }
+
+  function updateCaption(id: string, caption: string) {
+    setItems(items.map((item) => (item.id === id ? { ...item, caption } : item)))
+  }
+  function persistCaption(id: string, caption: string) {
+    startTransition(async () => {
+      await setPortfolioCaption(locale, id, caption)
     })
   }
 
@@ -442,6 +453,13 @@ export function SiteEditor({
                             placeholder={labels.portfolioCategory}
                             onChange={(event) => updateCategory(item.id, event.target.value)}
                             onBlur={(event) => persistCategory(item.id, event.target.value)}
+                            className="w-full border border-line bg-transparent px-2 py-1 text-[11px] outline-none focus:border-fg"
+                          />
+                          <input
+                            value={item.caption ?? ''}
+                            placeholder={labels.portfolioCaption}
+                            onChange={(event) => updateCaption(item.id, event.target.value)}
+                            onBlur={(event) => persistCaption(item.id, event.target.value)}
                             className="w-full border border-line bg-transparent px-2 py-1 text-[11px] outline-none focus:border-fg"
                           />
                         </div>

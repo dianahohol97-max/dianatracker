@@ -205,6 +205,7 @@ export const en: Dictionary = {
     portfolioShow: 'Show on site',
     portfolioHide: 'Hide from site',
     portfolioCategory: 'Category',
+    portfolioCaption: 'Caption (e.g. Dasha & Marko — Carpathians)',
     portfolioUploadTo: 'Upload photos into category',
     portfolioCategoryEg: 'e.g. Weddings, Portraits, Family',
     portfolioUncategorized: 'Uncategorized',
