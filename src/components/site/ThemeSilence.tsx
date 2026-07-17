@@ -1,6 +1,6 @@
 import type { SiteContent } from '@/lib/site/content'
 import { LeadForm, type LeadFormLabels } from './LeadForm'
-import type { LangSwitch, PortfolioItem, SiteLabels } from './SiteRenderer'
+import { groupPortfolio, type LangSwitch, type PortfolioItem, type SiteLabels } from './SiteRenderer'
 import s from './SiteThemes.module.css'
 
 /**
@@ -30,6 +30,8 @@ export function ThemeSilence({
   const brand = displayName ?? ''
   const heroImg = portfolio[0]?.previewUrl ?? null
   const gridItems = heroImg ? portfolio.slice(1) : portfolio
+  const groups = groupPortfolio(gridItems)
+  const hasCategories = groups.some((group) => group.category !== null)
 
   return (
     <div className={s.silence}>
@@ -86,30 +88,48 @@ export function ThemeSilence({
           )}
         </header>
 
-        {/* portfolio */}
+        {/* portfolio — grouped into labeled collections */}
         {portfolio.length > 0 && (
           <div className={s.sPad}>
             <div className={s.sLabels}>
               <span className={s.sMono}>{labels.portfolio}</span>
               <span className={s.sMono}>{portfolio.length}</span>
             </div>
-            <section id="portfolio" className={s.sGrid}>
-              {gridItems.map((item, index) => (
-                <figure key={item.id} className={s.sWork}>
-                  <div
-                    className={s.sWorkImg}
-                    style={
-                      item.previewUrl
-                        ? { backgroundImage: `url("${item.previewUrl}")` }
-                        : undefined
-                    }
-                  />
-                  <figcaption className={`${s.sMono} ${s.sWorkCap}`}>
-                    {String(index + 1).padStart(2, '0')}
-                  </figcaption>
-                </figure>
+            <div id="portfolio">
+              {groups.map((group) => (
+                <section key={group.category ?? '_'} style={{ marginBottom: 40 }}>
+                  {hasCategories && (
+                    <h2
+                      style={{
+                        fontFamily: 'var(--site-font-display)',
+                        fontWeight: 400,
+                        fontSize: 'clamp(18px, 2.6vw, 26px)',
+                        margin: '0 0 20px',
+                      }}
+                    >
+                      {group.category ?? labels.portfolio}
+                    </h2>
+                  )}
+                  <div className={s.sGrid}>
+                    {group.items.map((item, index) => (
+                      <figure key={item.id} className={s.sWork}>
+                        <div
+                          className={s.sWorkImg}
+                          style={
+                            item.previewUrl
+                              ? { backgroundImage: `url("${item.previewUrl}")` }
+                              : undefined
+                          }
+                        />
+                        <figcaption className={`${s.sMono} ${s.sWorkCap}`}>
+                          {String(index + 1).padStart(2, '0')}
+                        </figcaption>
+                      </figure>
+                    ))}
+                  </div>
+                </section>
               ))}
-            </section>
+            </div>
           </div>
         )}
 

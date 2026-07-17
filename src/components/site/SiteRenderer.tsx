@@ -8,6 +8,30 @@ export interface PortfolioItem {
   previewUrl: string | null
   /** Editor-only: the public RPC already filters hidden photos out. */
   visible?: boolean
+  /** Collection this photo is grouped under; null/empty = untagged. */
+  category?: string | null
+}
+
+/** Portfolio grouped into labeled collections, preserving first-seen order. */
+export interface PortfolioGroup {
+  category: string | null
+  items: PortfolioItem[]
+}
+
+export function groupPortfolio(items: PortfolioItem[]): PortfolioGroup[] {
+  const order: string[] = []
+  const map = new Map<string, PortfolioItem[]>()
+  for (const item of items) {
+    const key = item.category?.trim() ? item.category.trim() : ''
+    if (!map.has(key)) {
+      map.set(key, [])
+      order.push(key)
+    }
+    map.get(key)!.push(item)
+  }
+  // Untagged photos sort last when named categories exist.
+  order.sort((a, b) => (a === '' ? 1 : 0) - (b === '' ? 1 : 0))
+  return order.map((key) => ({ category: key || null, items: map.get(key)! }))
 }
 
 export interface SiteLabels {
@@ -91,6 +115,7 @@ export function SiteRenderer({
   }
 
   const brand = displayName ?? ''
+  const portfolioGroups = groupPortfolio(portfolio)
 
   return (
     <div
@@ -168,31 +193,49 @@ export function SiteRenderer({
           )}
         </section>
 
-        {/* ---- portfolio ---- */}
+        {/* ---- portfolio (grouped into labeled collections) ---- */}
         {portfolio.length > 0 && (
           <section id="portfolio" style={{ paddingBottom: 'clamp(48px, 8vw, 96px)' }}>
             <p style={{ ...label, marginBottom: 20 }}>{labels.portfolio}</p>
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-                gap: 22,
-              }}
-            >
-              {portfolio.map((item) => (
-                <span
-                  key={item.id}
-                  style={{
-                    display: 'block',
-                    aspectRatio: '4 / 5',
-                    borderRadius: 'var(--site-radius)',
-                    background: item.previewUrl
-                      ? `center / cover no-repeat url("${item.previewUrl}")`
-                      : 'var(--site-line)',
-                  }}
-                />
-              ))}
-            </div>
+            {portfolioGroups.map((group) => {
+              const showHeading = portfolioGroups.some((g) => g.category !== null)
+              return (
+                <div key={group.category ?? '_'} style={{ marginBottom: 36 }}>
+                  {showHeading && (
+                    <h2
+                      style={{
+                        ...display,
+                        fontSize: 'clamp(18px, 2.6vw, 24px)',
+                        marginBottom: 16,
+                      }}
+                    >
+                      {group.category ?? labels.portfolio}
+                    </h2>
+                  )}
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+                      gap: 22,
+                    }}
+                  >
+                    {group.items.map((item) => (
+                      <span
+                        key={item.id}
+                        style={{
+                          display: 'block',
+                          aspectRatio: '4 / 5',
+                          borderRadius: 'var(--site-radius)',
+                          background: item.previewUrl
+                            ? `center / cover no-repeat url("${item.previewUrl}")`
+                            : 'var(--site-line)',
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )
+            })}
           </section>
         )}
 

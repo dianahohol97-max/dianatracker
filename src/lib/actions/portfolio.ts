@@ -55,6 +55,29 @@ export async function setPortfolioVisibility(
   revalidatePath(`/${locale}/dashboard/site`)
 }
 
+/** Assign (or clear) the category a portfolio photo is grouped under. */
+export async function setPortfolioCategory(
+  locale: Locale,
+  assetId: string,
+  category: string
+): Promise<void> {
+  const supabase = createSupabaseServerClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) redirect('/uk/login')
+
+  const trimmed = category.trim().slice(0, 60)
+  const { error } = await supabase
+    .from('portfolio_assets')
+    .update({ category: trimmed || null })
+    .eq('id', assetId)
+    .eq('owner_id', user.id)
+  if (error) throw new Error(`Failed to set category: ${error.message}`)
+
+  revalidatePath(`/${locale}/dashboard/site`)
+}
+
 /** Persist a new portfolio order (position = index in the given id list). */
 export async function reorderPortfolio(locale: Locale, orderedIds: string[]): Promise<void> {
   const supabase = createSupabaseServerClient()
