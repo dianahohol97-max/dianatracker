@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation'
 import { deleteGallery, setGalleryPublished } from '@/lib/actions/galleries'
 import { getDictionary } from '@/lib/i18n'
 import { isLocale } from '@/lib/i18n/config'
+import { effectiveGalleryPlan } from '@/lib/plans'
 import { getStorage } from '@/lib/storage'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { CopyLinkButton } from '@/components/CopyLinkButton'
@@ -39,6 +40,14 @@ export default async function ManageGalleryPage({
     .eq('owner_id', user.id)
     .single<Gallery>()
   if (!gallery) notFound()
+
+  // Statistics are a «Плюс»+ feature; selection/favorites are free for all.
+  const { data: planRow } = await supabase
+    .from('profiles')
+    .select('plan, grace_until')
+    .eq('user_id', user.id)
+    .single<{ plan: string; grace_until: string | null }>()
+  const ownerPlan = effectiveGalleryPlan(planRow?.plan ?? 'free', planRow?.grace_until)
 
   const [{ data: assets }, { count: downloadCount }, { data: selections }] = await Promise.all([
     supabase
@@ -119,9 +128,15 @@ export default async function ManageGalleryPage({
           )}
 
           <span className="text-sm text-muted">
-            {dict.dashboard.views}: {gallery.view_count} · {dict.dashboard.photosCount}:{' '}
-            {assets?.length ?? 0} · {dict.galleryManage.statsDownloads}: {downloadCount ?? 0} ·{' '}
+            {dict.dashboard.photosCount}: {assets?.length ?? 0} ·{' '}
             {dict.galleryManage.statsFavorites}: {totalFavorites}
+            {ownerPlan.features.stats && (
+              <>
+                {' '}
+                · {dict.dashboard.views}: {gallery.view_count} ·{' '}
+                {dict.galleryManage.statsDownloads}: {downloadCount ?? 0}
+              </>
+            )}
           </span>
         </div>
 

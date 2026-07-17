@@ -1,6 +1,14 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { getPayments } from '@/lib/payments'
-import { isBillingPeriod, isPlanId, PLANS, planPriceUah } from '@/lib/plans'
+import {
+  GALLERY_PLANS,
+  SITE_PLANS,
+  galleryPlanPriceUah,
+  isBillingPeriod,
+  isGalleryPlanId,
+  isSitePlanId,
+  sitePlanPriceUah,
+} from '@/lib/plans'
 import { createSupabaseAdminClient } from '@/lib/supabase/admin'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 
@@ -23,9 +31,9 @@ function isCheckoutBody(value: unknown): value is CheckoutBody {
 }
 
 /**
- * Starts an upgrade: records a pending payment row and returns the provider's
- * checkout form for the browser to auto-submit. Requires LIQPAY_* and
- * SUPABASE_SERVICE_ROLE_KEY env — answers 503 until billing is configured.
+ * Starts an upgrade for either product: gallery storage tiers or site plans.
+ * Records a pending payment row and returns the provider's checkout form.
+ * Requires LIQPAY_* and SUPABASE_SERVICE_ROLE_KEY env — 503 until configured.
  */
 export async function POST(request: NextRequest) {
   const supabase = createSupabaseServerClient()
@@ -37,11 +45,22 @@ export async function POST(request: NextRequest) {
   }
 
   const body: unknown = await request.json().catch(() => null)
-  if (!isCheckoutBody(body) || !isPlanId(body.plan) || !isBillingPeriod(body.period)) {
+  if (!isCheckoutBody(body) || !isBillingPeriod(body.period)) {
     return NextResponse.json({ error: 'invalid_body' }, { status: 400 })
   }
-  if (body.plan === 'free') {
-    return NextResponse.json({ error: 'free_plan_needs_no_checkout' }, { status: 400 })
+
+  let amount: number
+  let description: string
+  if (isGalleryPlanId(body.plan) && body.plan !== 'free') {
+    const plan = GALLERY_PLANS[body.plan]
+    amount = galleryPlanPriceUah(plan, body.period)
+    description = `Gallery plan "${plan.id}" (${plan.storageGb} GB), billed per ${body.period}`
+  } else if (isSitePlanId(body.plan) && body.plan !== 'site_trial') {
+    const plan = SITE_PLANS[body.plan]
+    amount = sitePlanPriceUah(plan, body.period)
+    description = `Site plan "${plan.id}" (${plan.sites} site(s)), billed per ${body.period}`
+  } else {
+    return NextResponse.json({ error: 'plan_needs_no_checkout' }, { status: 400 })
   }
 
   const payments = getPayments()
@@ -50,8 +69,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'billing_not_configured' }, { status: 503 })
   }
 
-  const plan = PLANS[body.plan]
-  const amount = planPriceUah(plan, body.period)
   const orderId = crypto.randomUUID()
   const locale = body.locale === 'en' ? 'en' : 'uk'
 
@@ -59,7 +76,7 @@ export async function POST(request: NextRequest) {
     user_id: user.id,
     provider: payments.name,
     order_id: orderId,
-    plan: plan.id,
+    plan: body.plan,
     period: body.period,
     amount,
     currency: 'UAH',
@@ -74,7 +91,7 @@ export async function POST(request: NextRequest) {
     orderId,
     amount,
     currency: 'UAH',
-    description: `Gallery plan "${plan.id}" (${plan.storageGb} GB), billed per ${body.period}`,
+    description,
     period: body.period,
     resultUrl: `${appUrl}/${locale}/dashboard/billing`,
     serverUrl: `${appUrl}/api/billing/webhook`,

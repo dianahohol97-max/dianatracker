@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { effectiveGalleryPlan, planStorageBytes } from '@/lib/plans'
 import { galleryPrefix, isVariantName } from '@/lib/storage'
 
 /**
@@ -36,16 +37,24 @@ export async function authorizeUpload(
     return { ok: false, status: 404, error: 'gallery_not_found' }
   }
 
-  // Plan quota check.
+  // Plan gates: quota (with the post-cancellation grace period applied
+  // lazily) and the video feature, which starts on the «Плюс» tier.
   const { data: profile } = await supabase
     .from('profiles')
-    .select('storage_used_bytes, storage_limit_bytes')
+    .select('plan, storage_used_bytes, storage_limit_bytes, grace_until')
     .eq('user_id', userId)
     .single()
   if (!profile) {
     return { ok: false, status: 404, error: 'profile_not_found' }
   }
-  if (profile.storage_used_bytes + input.sizeBytes > profile.storage_limit_bytes) {
+
+  const plan = effectiveGalleryPlan(profile.plan, profile.grace_until)
+  if (isVideo && !plan.features.video) {
+    return { ok: false, status: 403, error: 'plan_video_required' }
+  }
+
+  const effectiveLimit = Math.min(profile.storage_limit_bytes, planStorageBytes(plan))
+  if (profile.storage_used_bytes + input.sizeBytes > effectiveLimit) {
     return { ok: false, status: 403, error: 'storage_quota_exceeded' }
   }
 

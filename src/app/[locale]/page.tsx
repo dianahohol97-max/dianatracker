@@ -2,7 +2,12 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { isLocale } from '@/lib/i18n/config'
 import { getLandingCopy } from '@/lib/landing/copy'
-import { PLANS } from '@/lib/plans'
+import {
+  GALLERY_PLANS,
+  SITE_PLANS,
+  type GalleryPlanId,
+  type SitePlanId,
+} from '@/lib/plans'
 import { Logo } from '@/components/Logo'
 import { Reveal } from '@/components/landing/Reveal'
 import s from './landing.module.css'
@@ -294,57 +299,73 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
             </div>
           </Reveal>
           <div className={s.plans}>
-            <div className={s.plan}>
-              <h3>{t.pricing.freeName}</h3>
-              <p className={s.gb}>{t.pricing.storage(PLANS.free.storageGb)}</p>
-              <p className={s.price}>
-                0 ₴<small> {t.pricing.freePeriod}</small>
-              </p>
-              <p className={s.yr}>{t.pricing.freeNote}</p>
-              <ul>
-                {t.pricing.freeItems.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-              <Link href={login} className={`${s.pillGhost} ${s.planCta}`}>
-                {t.pricing.freeCta}
-              </Link>
-            </div>
-            <div className={s.planHot}>
-              <span className={s.popular}>{t.pricing.popular}</span>
-              <h3>{t.pricing.startName}</h3>
-              <p className={s.gb}>{t.pricing.storage(PLANS.start.storageGb)}</p>
-              <p className={s.price}>
-                {PLANS.start.priceUahMonth} ₴<small> {t.pricing.perMonth}</small>
-              </p>
-              <p className={s.yr}>{t.pricing.yearHint(String(PLANS.start.priceUahYear))}</p>
-              <ul>
-                {t.pricing.startItems.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-              <Link href={login} className={`${s.pillHot} ${s.planCta}`}>
-                {t.pricing.startCta} <span>→</span>
-              </Link>
-            </div>
-            <div className={s.plan}>
-              <h3>{t.pricing.proName}</h3>
-              <p className={s.gb}>{t.pricing.storage(PLANS.pro.storageGb)}</p>
-              <p className={s.price}>
-                {PLANS.pro.priceUahMonth} ₴<small> {t.pricing.perMonth}</small>
-              </p>
-              <p className={s.yr}>{t.pricing.yearHint(String(PLANS.pro.priceUahYear))}</p>
-              <ul>
-                {t.pricing.proItems.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-              <Link href={login} className={`${s.pillGhost} ${s.planCta}`}>
-                {t.pricing.proCta}
-              </Link>
-            </div>
+            {(Object.keys(GALLERY_PLANS) as GalleryPlanId[]).map((id) => {
+              const plan = GALLERY_PLANS[id]
+              const copy = t.pricing.plans[id]
+              const highlight = id === 'plus'
+              return (
+                <div key={id} className={highlight ? s.planHot : s.plan}>
+                  {highlight && <span className={s.popular}>{t.pricing.popular}</span>}
+                  <h3>{copy.name}</h3>
+                  <p className={s.gb}>{t.pricing.storage(plan.storageGb)}</p>
+                  <p className={s.price}>
+                    {plan.priceUahMonth} ₴
+                    <small> {plan.priceUahMonth === 0 ? t.pricing.freeLabel : t.pricing.perMonth}</small>
+                  </p>
+                  <p className={s.yr}>
+                    {plan.priceUahMonth === 0
+                      ? copy.note
+                      : t.pricing.yearHint(String(plan.priceUahYear))}
+                  </p>
+                  <ul>
+                    {copy.bullets.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                  <Link
+                    href={login}
+                    className={`${highlight ? s.pillHot : s.pillGhost} ${s.planCta}`}
+                  >
+                    {t.pricing.planCta} {copy.name} {highlight && <span>→</span>}
+                  </Link>
+                </div>
+              )
+            })}
           </div>
-          <p className={s.fineprint}>{t.pricing.fineprint}</p>
+
+          <Reveal>
+            <div className={s.secHead} style={{ marginTop: 64 }}>
+              <h2 className={s.h2}>{t.pricing.siteTitle}</h2>
+              <p>{t.pricing.siteLede}</p>
+            </div>
+          </Reveal>
+          <div className={s.plans}>
+            {(Object.keys(SITE_PLANS) as SitePlanId[]).map((id) => {
+              const plan = SITE_PLANS[id]
+              const copy = t.pricing.sitePlans[id]
+              return (
+                <div key={id} className={s.plan}>
+                  <h3>{copy.name}</h3>
+                  <p className={s.gb}>{copy.note}</p>
+                  <p className={s.price}>
+                    {plan.priceUahMonth} ₴
+                    <small> {plan.priceUahMonth === 0 ? t.pricing.freeLabel : t.pricing.perMonth}</small>
+                  </p>
+                  {plan.priceUahMonth > 0 && (
+                    <p className={s.yr}>{t.pricing.yearHint(String(plan.priceUahYear))}</p>
+                  )}
+                  <div style={{ marginTop: 18 }}>
+                    <Link href={login} className={`${s.pillGhost} ${s.planCta}`}>
+                      {t.pricing.planCta} {copy.name}
+                    </Link>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+          <p className={s.fineprint}>
+            {t.pricing.bundleNote} {t.pricing.fineprint}
+          </p>
         </section>
 
         {/* ---------- faq ---------- */}

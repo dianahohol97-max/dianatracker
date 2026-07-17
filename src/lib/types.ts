@@ -12,6 +12,8 @@ export interface Profile {
   logo_url: string | null
   locale: Locale
   plan: string
+  site_plan: string
+  grace_until: string | null
   storage_used_bytes: number
   storage_limit_bytes: number
   created_at: string

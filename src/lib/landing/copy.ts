@@ -1,4 +1,5 @@
 import type { Locale } from '@/lib/i18n/config'
+import type { GalleryPlanId, SitePlanId } from '@/lib/plans'
 
 /**
  * Marketing landing copy. Kept apart from the app dictionaries — this text
@@ -58,24 +59,18 @@ export interface LandingCopy {
     titleBefore: string
     titleAccent: string
     lede: string
-    freeName: string
-    freePeriod: string
-    freeNote: string
-    freeItems: string[]
-    freeCta: string
-    startName: string
-    startNote: string
-    startItems: string[]
-    startCta: string
-    proName: string
-    proNote: string
-    proItems: string[]
-    proCta: string
     perMonth: string
+    freeLabel: string
     yearHint: (year: string) => string
     storage: (gb: number) => string
     popular: string
     fineprint: string
+    plans: Record<GalleryPlanId, { name: string; note: string; bullets: string[] }>
+    planCta: string
+    siteTitle: string
+    siteLede: string
+    sitePlans: Record<SitePlanId, { name: string; note: string }>
+    bundleNote: string
   }
   faq: { label: string; title: string; items: { q: string; a: string }[] }
   final: { label: string; titleBefore: string; titleAccent: string; cta: string }
@@ -164,8 +159,8 @@ const uk: LandingCopy = {
     lede: 'Це не список фіч — це рішення, які не переглядаються.',
     items: [
       {
-        title: 'Нуль нашого брендингу',
-        text: 'На галереях, сайтах і сторінках бронювання немає жодної згадки про нас. Клієнт бачить лише фотографа.',
+        title: 'Ваш бренд попереду',
+        text: 'З першого платного тарифу на галереях і сайтах немає жодної згадки про нас. Клієнт бачить лише фотографа.',
       },
       {
         title: 'Гроші — напряму',
@@ -182,33 +177,60 @@ const uk: LandingCopy = {
     ],
   },
   pricing: {
-    label: 'Тарифи · попередні, фіналізуються',
-    titleBefore: 'Платите лише за місце — ',
-    titleAccent: 'решта без обмежень',
-    lede: 'Усі можливості доступні на кожному тарифі. Різниця тільки в обсязі сховища.',
-    freeName: 'Безкоштовний',
-    freePeriod: 'назавжди',
-    freeNote: 'Для перших галерей і проби пера',
-    freeItems: [
-      'Галереї без обмежень за кількістю',
-      'Сайт на будь-якій із восьми тем',
-      'Бронювання з оплатою напряму',
-    ],
-    freeCta: 'Створити акаунт',
-    startName: 'Старт',
-    startNote: 'Місця вистачить на сезон активних зйомок',
-    startItems: ['Все з безкоштовного', 'Місця на сезон активних зйомок', 'Пріоритетна підтримка'],
-    startCta: 'Обрати Старт',
-    proName: 'Про',
-    proNote: 'Для студій і комерційних обсягів',
-    proItems: ['Все зі Старту', 'Архів багатьох сезонів під рукою', 'Для студій і комерційних обсягів'],
-    proCta: 'Обрати Про',
+    label: 'Тарифи',
+    titleBefore: 'Галереї — за місце, сайти — ',
+    titleAccent: 'окремим прайсом',
+    lede:
+      'Відбір фото клієнтом безкоштовний для всіх. Платні тарифи знімають наш брендинг, додають відео, статистику й більше місця.',
     perMonth: '/ місяць',
+    freeLabel: 'назавжди',
     yearHint: (year) => `або ${year} ₴ на рік — два місяці в подарунок`,
-    storage: (gb) => `${gb} ГБ сховища`,
+    storage: (gb) => (gb >= 1024 ? `${gb / 1024} ТБ сховища` : `${gb} ГБ сховища`),
     popular: 'Найпопулярніший',
     fineprint:
-      'Оплата карткою будь-якого українського банку. Скасувати можна будь-коли — файли лишаються, просто зупиняється завантаження нових, поки ви над лімітом.',
+      'Оплата карткою будь-якого українського банку. Скасувати можна будь-коли — файли лишаються ще 7 днів на повному ліміті, далі просто зупиняється завантаження нових, поки ви над безкоштовним лімітом.',
+    plans: {
+      free: {
+        name: 'Безкоштовний',
+        note: 'Для перших галерей і проби пера',
+        bullets: ['Відбір фото клієнтом', 'Галереї з паролем і терміном дії', 'Сайт-пробник на місяць'],
+      },
+      basic: {
+        name: 'Базовий',
+        note: 'Ваш бренд — і лише він',
+        bullets: ['Без нашого брендингу', 'Ваше лого в галереї', 'Все з безкоштовного'],
+      },
+      plus: {
+        name: 'Плюс',
+        note: 'Для повного робочого сезону',
+        bullets: ['Відео в галереях', 'Статистика переглядів', 'Чайові від клієнтів'],
+      },
+      pro: {
+        name: 'Про',
+        note: 'Для щільного календаря зйомок',
+        bullets: ['Все з Плюса', 'Пріоритетна підтримка'],
+      },
+      max: {
+        name: 'Максимальний',
+        note: 'Великі архіви під рукою',
+        bullets: ['1 ТБ сховища', 'Все з Про'],
+      },
+      maxplus: {
+        name: 'Максимальний+',
+        note: 'Студійний масштаб',
+        bullets: ['2 ТБ сховища', 'Все з Про'],
+      },
+    },
+    planCta: 'Обрати',
+    siteTitle: 'Сайти — окремо',
+    siteLede:
+      'Персональний сайт з власним доменом, SSL і SEO-налаштуваннями. Пробний місяць — безкоштовно.',
+    sitePlans: {
+      site_trial: { name: 'Пробний', note: '1 сайт на 1 місяць' },
+      site_basic: { name: 'Базовий', note: '1 сайт · власний домен · SSL · SEO' },
+      site_plus: { name: 'Плюс', note: '2 сайти · все те саме' },
+    },
+    bundleNote: 'Бандл «Галерея + Сайт» — мінус 15% на сайт, коли активні обидві підписки.',
   },
   faq: {
     label: 'Питання, які ставлять найчастіше',
@@ -216,7 +238,7 @@ const uk: LandingCopy = {
     items: [
       {
         q: 'Чи бачать клієнти, що галерея зроблена на «Прояві»?',
-        a: "Ні, і це принципова позиція. На публічних сторінках — лише ваше ім'я, ваш логотип і ваші фотографії. Клієнт вважає, що це ваш власний сайт, бо так воно і виглядає.",
+        a: "На безкоштовному тарифі внизу галереї стоїть маленький підпис «Створено на Прояві». Уже з Базового його немає: на сторінках — лише ваше ім'я, ваш логотип і ваші фотографії.",
       },
       {
         q: 'Через кого проходять гроші за зйомки?',
@@ -326,8 +348,8 @@ const en: LandingCopy = {
     lede: 'Not a feature list — decisions that do not get revisited.',
     items: [
       {
-        title: 'Zero our branding',
-        text: 'Galleries, sites and booking pages never mention us. The client sees only the photographer.',
+        title: 'Your brand up front',
+        text: 'From the first paid tier, galleries and sites never mention us. The client sees only the photographer.',
       },
       {
         title: 'Money goes direct',
@@ -344,29 +366,59 @@ const en: LandingCopy = {
     ],
   },
   pricing: {
-    label: 'Pricing · preliminary, being finalized',
-    titleBefore: 'Pay only for storage — ',
-    titleAccent: 'everything else is unlimited',
-    lede: 'All features on every plan. The only difference is storage size.',
-    freeName: 'Free',
-    freePeriod: 'forever',
-    freeNote: 'For your first galleries',
-    freeItems: ['Unlimited number of galleries', 'A site on any of eight themes', 'Booking with direct payment'],
-    freeCta: 'Create account',
-    startName: 'Start',
-    startNote: 'Enough room for a busy season',
-    startItems: ['Everything in Free', 'Room for a season of shoots', 'Priority support'],
-    startCta: 'Choose Start',
-    proName: 'Pro',
-    proNote: 'For studios and commercial volumes',
-    proItems: ['Everything in Start', 'Seasons of archive at hand', 'For studios and commercial volumes'],
-    proCta: 'Choose Pro',
+    label: 'Pricing',
+    titleBefore: 'Galleries by storage, sites — ',
+    titleAccent: 'priced separately',
+    lede:
+      'Client photo selection is free for everyone. Paid tiers remove our branding and add video, statistics and more room.',
     perMonth: '/ month',
+    freeLabel: 'forever',
     yearHint: (year) => `or ${year} ₴ per year — two months free`,
-    storage: (gb) => `${gb} GB of storage`,
+    storage: (gb) => (gb >= 1024 ? `${gb / 1024} TB of storage` : `${gb} GB of storage`),
     popular: 'Most popular',
     fineprint:
-      'Pay with any Ukrainian bank card. Cancel anytime — files stay; new uploads pause while you are over the limit.',
+      'Pay with any Ukrainian bank card. Cancel anytime — files keep full limits for 7 more days, then new uploads pause while you are over the free limit.',
+    plans: {
+      free: {
+        name: 'Free',
+        note: 'For your first galleries',
+        bullets: ['Client photo selection', 'Password & expiry on galleries', 'A trial site for a month'],
+      },
+      basic: {
+        name: 'Basic',
+        note: 'Your brand — and only yours',
+        bullets: ['No our branding', 'Your logo in galleries', 'Everything in Free'],
+      },
+      plus: {
+        name: 'Plus',
+        note: 'For a full working season',
+        bullets: ['Video in galleries', 'View statistics', 'Client tips'],
+      },
+      pro: {
+        name: 'Pro',
+        note: 'For a dense shooting calendar',
+        bullets: ['Everything in Plus', 'Priority support'],
+      },
+      max: {
+        name: 'Max',
+        note: 'Large archives at hand',
+        bullets: ['1 TB of storage', 'Everything in Pro'],
+      },
+      maxplus: {
+        name: 'Max+',
+        note: 'Studio scale',
+        bullets: ['2 TB of storage', 'Everything in Pro'],
+      },
+    },
+    planCta: 'Choose',
+    siteTitle: 'Sites — separately',
+    siteLede: 'A personal site with a custom domain, SSL and SEO. The first month is free.',
+    sitePlans: {
+      site_trial: { name: 'Trial', note: '1 site for 1 month' },
+      site_basic: { name: 'Basic', note: '1 site · custom domain · SSL · SEO' },
+      site_plus: { name: 'Plus', note: '2 sites · all the same' },
+    },
+    bundleNote: 'Gallery + Site bundle — 15% off the site while both subscriptions are active.',
   },
   faq: {
     label: 'Frequently asked',
@@ -374,7 +426,7 @@ const en: LandingCopy = {
     items: [
       {
         q: 'Do clients see the gallery is made on Proyav?',
-        a: 'No — a matter of principle. Public pages carry only your name, your logo and your photos. Clients assume it is your own site, because that is how it looks.',
+        a: 'On the free tier a small “Made with Proyav” note sits at the bottom of the gallery. From Basic up it is gone: pages carry only your name, your logo and your photos.',
       },
       {
         q: 'Who do shoot payments go through?',

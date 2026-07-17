@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { isGalleryUnlocked } from '@/lib/gallery-access'
 import { getDictionary } from '@/lib/i18n'
 import { isLocale } from '@/lib/i18n/config'
+import { effectiveGalleryPlan } from '@/lib/plans'
 import { getStorage } from '@/lib/storage'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { DownloadAllButton } from '@/components/DownloadAllButton'
@@ -91,21 +92,24 @@ export default async function PublicGalleryPage({
     .order('created_at')
     .returns<Asset[]>()
 
-  // Photographer's branding — the only identity shown on the page.
+  // Photographer's branding + their plan, which gates the logo and the
+  // platform badge (branding removal starts on the first paid tier).
   const { data: brandingData } = await supabase.rpc('get_gallery_branding', {
     gallery_slug: gallery.slug,
   })
   const brandingRows = brandingData as
-    | { display_name: string | null; logo_key: string | null }[]
+    | { display_name: string | null; logo_key: string | null; plan: string | null }[]
     | null
   const branding = brandingRows?.[0] ?? null
+  const ownerPlan = effectiveGalleryPlan(branding?.plan ?? 'free', null)
 
   // Presigned preview URLs, generated server-side; the browser loads media
   // straight from R2. Falls back to the original until variants exist.
   const storage = getStorage()
-  const logoUrl = branding?.logo_key
-    ? await storage.getSignedReadUrl(branding.logo_key, { expiresInSeconds: 60 * 60 })
-    : null
+  const logoUrl =
+    branding?.logo_key && ownerPlan.features.photographerLogo
+      ? await storage.getSignedReadUrl(branding.logo_key, { expiresInSeconds: 60 * 60 })
+      : null
   const items: GridItem[] = await Promise.all(
     (assets ?? []).map(async (asset) => ({
       id: asset.id,
@@ -181,6 +185,17 @@ export default async function PublicGalleryPage({
         favoriteLabel={dict.publicGallery.favoriteToggle}
         initialFavorites={initialFavorites}
       />
+
+      {!ownerPlan.features.brandingRemoval && (
+        <footer className="mt-16 text-center">
+          <a
+            href={`/${locale}`}
+            className="text-xs uppercase tracking-widest text-muted hover:text-fg"
+          >
+            {dict.publicGallery.madeOn}
+          </a>
+        </footer>
+      )}
     </main>
   )
 }

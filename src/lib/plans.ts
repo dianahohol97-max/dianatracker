@@ -1,62 +1,194 @@
 /**
- * Subscription tiers (Pixover model: free plan → paid storage tiers).
- * Prices are launch placeholders — adjust here, everything else follows.
- * Display names live in the i18n dictionaries (billing.plan<Id>).
+ * Pricing v2 — the single source of truth for tiers, prices and feature
+ * gates. The landing, the billing page, checkout and upload gating all read
+ * from here; changing a number here changes it everywhere.
+ *
+ * Margin logic behind the storage numbers: light tiers live on R2, heavy
+ * tiers (500 GB+) move to B2 + CDN — that is why StorageProvider is an
+ * abstraction. Yearly = two months free.
  */
 
-export type PlanId = 'free' | 'start' | 'pro'
+export type GalleryPlanId = 'free' | 'basic' | 'plus' | 'pro' | 'max' | 'maxplus'
+export type SitePlanId = 'site_trial' | 'site_basic' | 'site_plus'
 export type BillingPeriod = 'month' | 'year'
-
-export interface Plan {
-  id: PlanId
-  storageGb: number
-  priceUahMonth: number
-  priceUahYear: number
-  priceUsdMonth: number
-  priceUsdYear: number
-}
 
 const GB = 1024 * 1024 * 1024
 
-export const PLANS: Record<PlanId, Plan> = {
+export interface PlanFeatures {
+  /** No «Прояв» badge on public galleries/sites. */
+  brandingRemoval: boolean
+  /** Photographer's own logo shown in galleries. */
+  photographerLogo: boolean
+  /** Client photo selection (favorites/retouch) — free for everyone. */
+  clientSelection: boolean
+  /** Video files in galleries. */
+  video: boolean
+  /** Gallery view/download statistics. */
+  stats: boolean
+  /** Client tips (не реалізовано ще — гейт на майбутнє). */
+  tips: boolean
+  prioritySupport: boolean
+}
+
+export interface GalleryPlan {
+  id: GalleryPlanId
+  storageGb: number
+  priceUahMonth: number
+  priceUahYear: number
+  /** Which storage backend the tier is costed for (informational). */
+  backend: 'r2' | 'b2'
+  features: PlanFeatures
+}
+
+const baseFeatures: PlanFeatures = {
+  brandingRemoval: false,
+  photographerLogo: false,
+  clientSelection: true,
+  video: false,
+  stats: false,
+  tips: false,
+  prioritySupport: false,
+}
+
+export const GALLERY_PLANS: Record<GalleryPlanId, GalleryPlan> = {
   free: {
     id: 'free',
     storageGb: 3,
     priceUahMonth: 0,
     priceUahYear: 0,
-    priceUsdMonth: 0,
-    priceUsdYear: 0,
+    backend: 'r2',
+    features: { ...baseFeatures },
   },
-  start: {
-    id: 'start',
-    storageGb: 100,
-    priceUahMonth: 249,
-    priceUahYear: 2490,
-    priceUsdMonth: 6,
-    priceUsdYear: 60,
+  basic: {
+    id: 'basic',
+    storageGb: 50,
+    priceUahMonth: 149,
+    priceUahYear: 1490,
+    backend: 'r2',
+    features: { ...baseFeatures, brandingRemoval: true, photographerLogo: true },
+  },
+  plus: {
+    id: 'plus',
+    storageGb: 200,
+    priceUahMonth: 369,
+    priceUahYear: 3690,
+    backend: 'r2',
+    features: {
+      ...baseFeatures,
+      brandingRemoval: true,
+      photographerLogo: true,
+      video: true,
+      stats: true,
+      tips: true,
+    },
   },
   pro: {
     id: 'pro',
     storageGb: 500,
-    priceUahMonth: 499,
-    priceUahYear: 4990,
-    priceUsdMonth: 12,
-    priceUsdYear: 120,
+    priceUahMonth: 599,
+    priceUahYear: 5990,
+    backend: 'b2',
+    features: {
+      ...baseFeatures,
+      brandingRemoval: true,
+      photographerLogo: true,
+      video: true,
+      stats: true,
+      tips: true,
+      prioritySupport: true,
+    },
+  },
+  max: {
+    id: 'max',
+    storageGb: 1024,
+    priceUahMonth: 999,
+    priceUahYear: 9990,
+    backend: 'b2',
+    features: {
+      ...baseFeatures,
+      brandingRemoval: true,
+      photographerLogo: true,
+      video: true,
+      stats: true,
+      tips: true,
+      prioritySupport: true,
+    },
+  },
+  maxplus: {
+    id: 'maxplus',
+    storageGb: 2048,
+    priceUahMonth: 1699,
+    priceUahYear: 16990,
+    backend: 'b2',
+    features: {
+      ...baseFeatures,
+      brandingRemoval: true,
+      photographerLogo: true,
+      video: true,
+      stats: true,
+      tips: true,
+      prioritySupport: true,
+    },
   },
 }
 
-export function isPlanId(value: string): value is PlanId {
-  return value in PLANS
+export interface SitePlan {
+  id: SitePlanId
+  sites: number
+  priceUahMonth: number
+  priceUahYear: number
+  customDomain: boolean
+}
+
+/** Sites are a separate product with near-zero storage cost. */
+export const SITE_PLANS: Record<SitePlanId, SitePlan> = {
+  site_trial: { id: 'site_trial', sites: 1, priceUahMonth: 0, priceUahYear: 0, customDomain: false },
+  site_basic: { id: 'site_basic', sites: 1, priceUahMonth: 99, priceUahYear: 990, customDomain: true },
+  site_plus: { id: 'site_plus', sites: 2, priceUahMonth: 149, priceUahYear: 1490, customDomain: true },
+}
+
+/** Бандл «Галерея + Сайт»: знижка на сайт при активних обох підписках. */
+export const BUNDLE_SITE_DISCOUNT = 0.15
+
+/** Grace period after cancellation before limits drop to free (Pixover-style). */
+export const GRACE_PERIOD_DAYS = 7
+
+export function isGalleryPlanId(value: string): value is GalleryPlanId {
+  return value in GALLERY_PLANS
+}
+
+export function isSitePlanId(value: string): value is SitePlanId {
+  return value in SITE_PLANS
 }
 
 export function isBillingPeriod(value: string): value is BillingPeriod {
   return value === 'month' || value === 'year'
 }
 
-export function planStorageBytes(plan: Plan): number {
+export function planStorageBytes(plan: GalleryPlan): number {
   return plan.storageGb * GB
 }
 
-export function planPriceUah(plan: Plan, period: BillingPeriod): number {
+export function galleryPlanPriceUah(plan: GalleryPlan, period: BillingPeriod): number {
   return period === 'month' ? plan.priceUahMonth : plan.priceUahYear
+}
+
+export function sitePlanPriceUah(plan: SitePlan, period: BillingPeriod): number {
+  return period === 'month' ? plan.priceUahMonth : plan.priceUahYear
+}
+
+/**
+ * The plan whose limits/features actually apply right now: after the grace
+ * period of a canceled subscription runs out, the account behaves as free
+ * (files are never deleted — uploads just stop while over the free limit).
+ */
+export function effectiveGalleryPlan(
+  plan: string,
+  graceUntil: string | null | undefined
+): GalleryPlan {
+  const known = isGalleryPlanId(plan) ? GALLERY_PLANS[plan] : GALLERY_PLANS.free
+  if (graceUntil && new Date(graceUntil).getTime() < Date.now()) {
+    return GALLERY_PLANS.free
+  }
+  return known
 }
