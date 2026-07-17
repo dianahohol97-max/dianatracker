@@ -11,6 +11,10 @@ import {
 } from '@/lib/plans'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { BillingPlans, buildGalleryCard, buildSiteCard } from '@/components/BillingPlans'
+import {
+  BillingSubscriptions,
+  type SubscriptionView,
+} from '@/components/BillingSubscriptions'
 import type { Profile } from '@/lib/types'
 
 export const dynamic = 'force-dynamic'
@@ -48,6 +52,11 @@ export default async function BillingPage({ params }: { params: { locale: string
     .eq('user_id', user.id)
     .single<Profile>()
   if (!profile) notFound()
+
+  const { data: subRows } = await supabase
+    .from('billing_subscriptions')
+    .select('product, plan, period, next_charge_at, status')
+    .eq('user_id', user.id)
 
   const galleryNames: Record<GalleryPlanId, string> = {
     free: dict.billing.planFree,
@@ -101,6 +110,27 @@ export default async function BillingPage({ params }: { params: { locale: string
     notConfigured: dict.billing.notConfigured,
   }
 
+  const subscriptions: SubscriptionView[] = (subRows ?? [])
+    .filter(
+      (row): row is typeof row & { product: 'gallery' | 'site' } =>
+        row.product === 'gallery' || row.product === 'site'
+    )
+    .map((row) => ({
+      product: row.product,
+      planName:
+        row.product === 'gallery' && isGalleryKey(row.plan)
+          ? galleryNames[row.plan]
+          : row.product === 'site' && isSiteKey(row.plan)
+            ? siteNames[row.plan]
+            : row.plan,
+      period: row.period,
+      nextChargeAt: row.next_charge_at,
+      status:
+        row.status === 'canceled' || row.status === 'past_due'
+          ? row.status
+          : 'active',
+    }))
+
   const currentGalleryName = isGalleryKey(profile.plan)
     ? galleryNames[profile.plan]
     : profile.plan
@@ -137,6 +167,22 @@ export default async function BillingPage({ params }: { params: { locale: string
         <BillingPlans cards={siteCards} locale={locale} labels={labels} columns={3} />
         <p className="mt-4 text-xs text-muted">{dict.billing.bundleNote}</p>
       </section>
+
+      <BillingSubscriptions
+        subscriptions={subscriptions}
+        locale={locale}
+        labels={{
+          title: dict.billing.autoRenewTitle,
+          productGallery: dict.billing.galleryPlansTitle,
+          productSite: dict.billing.sitePlansTitle,
+          nextCharge: dict.billing.autoRenewNextCharge,
+          activeUntil: dict.billing.autoRenewActiveUntil,
+          statusPastDue: dict.billing.autoRenewPastDue,
+          cancel: dict.billing.autoRenewCancel,
+          canceled: dict.billing.autoRenewCanceled,
+          confirm: dict.billing.autoRenewConfirm,
+        }}
+      />
     </main>
   )
 }

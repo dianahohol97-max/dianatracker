@@ -13,6 +13,14 @@
 3. Auth → URL Configuration → додай Redirect URLs:
    `https://proiav.space/auth/callback` (і `http://localhost:3000/auth/callback`).
 4. Скопіюй: Project URL, anon key, service_role key (Settings → API).
+5. Вхід через Google (кнопка вже на сторінці логіна):
+   1. [Google Cloud Console](https://console.cloud.google.com) → створи проєкт →
+      APIs & Services → OAuth consent screen (External, додай назву і домен).
+   2. Credentials → Create Credentials → OAuth client ID → Web application.
+      Authorized redirect URI: `https://<project-ref>.supabase.co/auth/v1/callback`
+      (точне значення показує Supabase на кроці 3 нижче).
+   3. Supabase → Authentication → Sign In / Providers → Google → увімкни,
+      встав Client ID і Client Secret.
 
 ## 2. Cloudflare R2 (обов'язково)
 
@@ -64,16 +72,20 @@
 Два провайдери на вибір, перемикаються env-змінною `PAYMENT_PROVIDER`.
 До налаштування сторінка тарифів чемно пише «оплати ще не підключені».
 
-**Monobank-еквайринг (одноразові платежі):**
+**Monobank-еквайринг (з авто-продовженням):**
 
 1. Кабінет еквайрингу monobank → API → згенеруй токен.
-2. Env: `PAYMENT_PROVIDER=monobank`, `MONOBANK_TOKEN`.
+2. Env: `PAYMENT_PROVIDER=monobank`, `MONOBANK_TOKEN`, а також
+   `CRON_SECRET` — будь-який довгий випадковий рядок (ним Vercel Cron
+   авторизується в `/api/billing/renew`).
 3. Webhook налаштовується автоматично при створенні кожного рахунку —
    нічого прописувати в кабінеті не треба.
-4. Особливість: авто-продовження немає. Клієнт оплачує місяць/рік, тариф
-   діє до кінця оплаченого періоду (+7 днів grace), далі ліміти м'яко
-   повертаються до безкоштовних — файли не видаляються. Продовження —
-   повторна оплата на сторінці тарифів.
+4. Як працює авто-продовження: при першій оплаті картка токенізується,
+   щоденний cron списує оплату, коли період закінчився. Скасування — на
+   сторінці тарифів (блок «Авто-продовження»); тариф діє до кінця
+   оплаченого періоду, файли не видаляються. Якщо списання не пройшло —
+   7 днів grace і позначка на сторінці тарифів, далі ліміти м'яко
+   повертаються до безкоштовних.
 
 **LiqPay (підписки з авто-продовженням):**
 

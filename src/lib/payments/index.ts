@@ -2,6 +2,9 @@ import { LiqPayProvider } from './LiqPayProvider'
 import { MonobankProvider } from './MonobankProvider'
 import type { PaymentProvider } from './PaymentProvider'
 
+export { canChargeTokens } from './PaymentProvider'
+export type { RecurringChargeProvider, TokenChargeRequest } from './PaymentProvider'
+
 let cached: PaymentProvider | null = null
 
 /**

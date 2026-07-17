@@ -115,6 +115,7 @@ export async function POST(request: NextRequest) {
       resultUrl: `${appUrl}/${locale}/dashboard/billing`,
       serverUrl: `${appUrl}/api/billing/webhook`,
       language: locale,
+      customerId: user.id,
     })
     return NextResponse.json(form)
   } catch (cause) {
