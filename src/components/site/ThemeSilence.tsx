@@ -3,12 +3,35 @@ import { LeadForm, type LeadFormLabels } from './LeadForm'
 import { groupPortfolio, type LangSwitch, type PortfolioItem, type SiteLabels } from './SiteRenderer'
 import s from './SiteThemes.module.css'
 
+const RATIOS = [s.r34, s.r43, s.r11]
+
+/**
+ * One infinitely-scrolling row. The items are laid out twice so the CSS
+ * translateX(-50%) loops seamlessly; aspect ratios cycle for the varied,
+ * editorial feel of the artifact.
+ */
+function Marquee({ items, dir }: { items: PortfolioItem[]; dir: 'm1' | 'm2' }) {
+  if (items.length === 0) return null
+  const doubled = [...items, ...items]
+  return (
+    <div className={`${s.sMarquee} ${dir === 'm1' ? s.m1 : s.m2}`}>
+      {doubled.map((item, index) => (
+        <div
+          key={`${item.id}-${index}`}
+          className={`${s.cell} ${RATIOS[index % RATIOS.length]}`}
+          style={item.previewUrl ? { backgroundImage: `url("${item.previewUrl}")` } : undefined}
+        />
+      ))}
+    </div>
+  )
+}
+
 /**
  * «Тиша» / «Опівніч» — the flagship layout: a full-bleed hero with a centred
- * caps-serif title, a staggered grayscale portfolio grid with numbered
- * captions, an inverted italic quote band for the bio, numbered pricing and a
- * centred contact block. Colours/fonts come from the --site-* vars on the
- * wrapper; this file owns the structure.
+ * caps-serif title, moving grayscale portfolio marquees, an inverted italic
+ * quote band for the bio, numbered pricing and a centred contact block.
+ * Colours/fonts come from the --site-* vars on the wrapper; this file owns
+ * the structure.
  */
 export function ThemeSilence({
   content,
@@ -96,36 +119,18 @@ export function ThemeSilence({
               <span className={s.sMono}>{portfolio.length}</span>
             </div>
             <div id="portfolio">
-              {groups.map((group) => (
-                <section key={group.category ?? '_'} style={{ marginBottom: 40 }}>
+              {groups.map((group, gi) => (
+                <section key={group.category ?? '_'} style={{ marginBottom: 28 }}>
                   {hasCategories && (
-                    <h2
-                      style={{
-                        fontFamily: 'var(--site-font-display)',
-                        fontWeight: 400,
-                        fontSize: 'clamp(18px, 2.6vw, 26px)',
-                        margin: '0 0 20px',
-                      }}
-                    >
+                    <span className={s.sMono} style={{ display: 'block', margin: '0 0 12px' }}>
                       {group.category ?? labels.portfolio}
-                    </h2>
+                    </span>
                   )}
-                  <div className={s.sGrid}>
-                    {group.items.map((item, index) => (
-                      <figure key={item.id} className={s.sWork}>
-                        <div
-                          className={s.sWorkImg}
-                          style={
-                            item.previewUrl
-                              ? { backgroundImage: `url("${item.previewUrl}")` }
-                              : undefined
-                          }
-                        />
-                        <figcaption className={`${s.sMono} ${s.sWorkCap}`}>
-                          {String(index + 1).padStart(2, '0')}
-                        </figcaption>
-                      </figure>
-                    ))}
+                  <div className={s.sMarquees}>
+                    <Marquee items={group.items} dir={gi % 2 === 0 ? 'm1' : 'm2'} />
+                    {!hasCategories && group.items.length > 3 && (
+                      <Marquee items={[...group.items].reverse()} dir="m2" />
+                    )}
                   </div>
                 </section>
               ))}
