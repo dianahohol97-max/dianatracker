@@ -57,6 +57,8 @@ export const en: Dictionary = {
     deleteGallery: 'Delete gallery',
     deleteConfirm: 'The gallery and all photos will be deleted forever. This cannot be undone.',
     noAssets: 'No photos in this gallery yet. Upload the first ones to see how it will look for the client.',
+    statsDownloads: 'Downloads',
+    statsFavorites: 'In client favorites',
   },
   publicGallery: {
     passwordTitle: 'This gallery is password protected',
@@ -64,6 +66,10 @@ export const en: Dictionary = {
     passwordSubmit: 'Open gallery',
     passwordError: 'That password does not match. Please try again.',
     downloadOriginal: 'Download original',
+    downloadAll: 'Download all photos as archive',
+    preparingArchive: 'Preparing your archive:',
+    archiveError: 'Could not build the archive. Please try again.',
+    favoriteToggle: 'Add to favorites',
     notFound: 'Gallery not found. The link may have expired or the gallery is not published yet.',
   },
 }

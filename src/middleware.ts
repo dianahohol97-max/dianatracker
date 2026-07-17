@@ -23,7 +23,22 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  return updateSession(request, NextResponse.next({ request }))
+  const response = NextResponse.next({ request })
+
+  // Anonymous client identity for public galleries: an unguessable token in
+  // an httpOnly cookie scopes favorites/retouch picks without registration.
+  const isPublicGallery = locales.some((locale) => pathname.startsWith(`/${locale}/g/`))
+  if (isPublicGallery && !request.cookies.get('ct')) {
+    response.cookies.set('ct', crypto.randomUUID(), {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60 * 60 * 24 * 365,
+      path: '/',
+    })
+  }
+
+  return updateSession(request, response)
 }
 
 export const config = {

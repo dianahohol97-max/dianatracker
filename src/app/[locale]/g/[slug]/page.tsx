@@ -1,9 +1,11 @@
+import { cookies } from 'next/headers'
 import { notFound } from 'next/navigation'
 import { isGalleryUnlocked } from '@/lib/gallery-access'
 import { getDictionary } from '@/lib/i18n'
 import { isLocale } from '@/lib/i18n/config'
 import { getStorage } from '@/lib/storage'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { DownloadAllButton } from '@/components/DownloadAllButton'
 import { GalleryGrid, type GridItem } from '@/components/GalleryGrid'
 import type { Asset } from '@/lib/types'
 
@@ -108,6 +110,19 @@ export default async function PublicGalleryPage({
   // Basic stats: count the view (fire-and-forget semantics, errors ignored).
   await supabase.rpc('record_gallery_view', { gallery_slug: gallery.slug })
 
+  // This client's current favorites (scoped by the middleware-minted token).
+  const clientToken = cookies().get('ct')?.value
+  let initialFavorites: string[] = []
+  if (clientToken) {
+    const { data: selections } = await supabase
+      .from('selections')
+      .select('asset_id')
+      .eq('gallery_id', gallery.id)
+      .eq('client_token', clientToken)
+      .eq('kind', 'favorite')
+    initialFavorites = (selections ?? []).map((s: { asset_id: string }) => s.asset_id)
+  }
+
   return (
     <main className="mx-auto max-w-6xl px-4 py-16 sm:px-8">
       <header className="mb-16 text-center">
@@ -126,9 +141,25 @@ export default async function PublicGalleryPage({
             {gallery.description}
           </p>
         )}
+        {items.length > 0 && (
+          <div className="mt-8">
+            <DownloadAllButton
+              slug={gallery.slug}
+              label={dict.publicGallery.downloadAll}
+              progressLabel={dict.publicGallery.preparingArchive}
+              errorLabel={dict.publicGallery.archiveError}
+            />
+          </div>
+        )}
       </header>
 
-      <GalleryGrid items={items} downloadLabel={dict.publicGallery.downloadOriginal} />
+      <GalleryGrid
+        items={items}
+        slug={gallery.slug}
+        downloadLabel={dict.publicGallery.downloadOriginal}
+        favoriteLabel={dict.publicGallery.favoriteToggle}
+        initialFavorites={initialFavorites}
+      />
     </main>
   )
 }

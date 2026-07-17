@@ -2,12 +2,14 @@
 
 import { useCallback, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { generateImageVariants } from '@/lib/images/variants'
 
 /**
  * Direct-to-R2 uploader:
  *   1. POST /api/uploads/presign  → presigned PUT URL (quota + ownership checked)
  *   2. PUT the file straight to R2 (XHR for progress events)
- *   3. POST /api/uploads/complete → asset row registered under RLS
+ *   3. Generate preview/thumb renditions in-browser and PUT them the same way
+ *   4. POST /api/uploads/complete → asset row (with variants map) under RLS
  *
  * Runs up to CONCURRENCY uploads in parallel. Resumable multipart uploads for
  * very large videos are a follow-up (S3 multipart via the same StorageProvider).
@@ -69,29 +71,49 @@ export function Uploader({ galleryId, dropHint }: { galleryId: string; dropHint:
     setItems((prev) => prev.map((item) => (item.id === id ? { ...item, ...patch } : item)))
   }, [])
 
+  const presign = useCallback(
+    async (fileName: string, contentType: string, sizeBytes: number, variant?: string) => {
+      const response = await fetch('/api/uploads/presign', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ galleryId, fileName, contentType, sizeBytes, variant }),
+      })
+      if (!response.ok) throw new Error(`presign ${response.status}`)
+      return (await response.json()) as { uploadUrl: string; key: string }
+    },
+    [galleryId]
+  )
+
   const uploadOne = useCallback(
     async (item: UploadItem) => {
       updateItem(item.id, { status: 'uploading' })
       try {
-        const presignResponse = await fetch('/api/uploads/presign', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            galleryId,
-            fileName: item.file.name,
-            contentType: item.file.type || 'application/octet-stream',
-            sizeBytes: item.file.size,
-          }),
-        })
-        if (!presignResponse.ok) throw new Error(`presign ${presignResponse.status}`)
-        const { uploadUrl, key } = (await presignResponse.json()) as {
-          uploadUrl: string
-          key: string
-        }
+        const contentType = item.file.type || 'application/octet-stream'
+        const { uploadUrl, key } = await presign(item.file.name, contentType, item.file.size)
 
+        // The original dominates the transfer — its PUT drives the bar to 90%,
+        // the (much smaller) renditions fill the rest.
         await putWithProgress(uploadUrl, item.file, (progress) =>
-          updateItem(item.id, { progress })
+          updateItem(item.id, { progress: Math.round(progress * 0.9) })
         )
+
+        const variants: Record<string, string> = {}
+        for (const rendition of await generateImageVariants(item.file)) {
+          const target = await presign(
+            `${rendition.name}.jpg`,
+            'image/jpeg',
+            rendition.blob.size,
+            rendition.name
+          )
+          const put = await fetch(target.uploadUrl, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'image/jpeg' },
+            body: rendition.blob,
+          })
+          if (!put.ok) throw new Error(`variant put ${put.status}`)
+          variants[rendition.name] = target.key
+        }
+        updateItem(item.id, { progress: 95 })
 
         const dimensions = await readImageSize(item.file)
         const completeResponse = await fetch('/api/uploads/complete', {
@@ -100,8 +122,9 @@ export function Uploader({ galleryId, dropHint }: { galleryId: string; dropHint:
           body: JSON.stringify({
             galleryId,
             key,
-            contentType: item.file.type || 'application/octet-stream',
+            contentType,
             sizeBytes: item.file.size,
+            variants,
             ...dimensions,
           }),
         })
@@ -112,7 +135,7 @@ export function Uploader({ galleryId, dropHint }: { galleryId: string; dropHint:
         updateItem(item.id, { status: 'error' })
       }
     },
-    [galleryId, updateItem]
+    [galleryId, presign, updateItem]
   )
 
   const startUploads = useCallback(

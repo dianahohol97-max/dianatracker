@@ -34,13 +34,32 @@ export default async function ManageGalleryPage({
     .single<Gallery>()
   if (!gallery) notFound()
 
-  const { data: assets } = await supabase
-    .from('assets')
-    .select('*')
-    .eq('gallery_id', gallery.id)
-    .order('position')
-    .order('created_at')
-    .returns<Asset[]>()
+  const [{ data: assets }, { count: downloadCount }, { data: selections }] = await Promise.all([
+    supabase
+      .from('assets')
+      .select('*')
+      .eq('gallery_id', gallery.id)
+      .order('position')
+      .order('created_at')
+      .returns<Asset[]>(),
+    supabase
+      .from('gallery_events')
+      .select('*', { count: 'exact', head: true })
+      .eq('gallery_id', gallery.id)
+      .eq('type', 'download'),
+    supabase
+      .from('selections')
+      .select('asset_id, kind')
+      .eq('gallery_id', gallery.id)
+      .returns<{ asset_id: string; kind: string }[]>(),
+  ])
+
+  const favoriteCounts = new Map<string, number>()
+  for (const selection of selections ?? []) {
+    if (selection.kind !== 'favorite') continue
+    favoriteCounts.set(selection.asset_id, (favoriteCounts.get(selection.asset_id) ?? 0) + 1)
+  }
+  const totalFavorites = [...favoriteCounts.values()].reduce((sum, n) => sum + n, 0)
 
   // Short-lived previews for the owner's thumbnails — signed server-side,
   // fetched by the browser straight from R2.
@@ -48,9 +67,10 @@ export default async function ManageGalleryPage({
   const previews = await Promise.all(
     (assets ?? []).map(async (asset) => ({
       asset,
-      url: await storage.getSignedReadUrl(asset.variants.preview ?? asset.r2_key, {
-        expiresInSeconds: 60 * 60,
-      }),
+      url: await storage.getSignedReadUrl(
+        asset.variants.thumb ?? asset.variants.preview ?? asset.r2_key,
+        { expiresInSeconds: 60 * 60 }
+      ),
     }))
   )
 
@@ -92,7 +112,8 @@ export default async function ManageGalleryPage({
 
           <span className="text-sm text-muted">
             {dict.dashboard.views}: {gallery.view_count} · {dict.dashboard.photosCount}:{' '}
-            {assets?.length ?? 0}
+            {assets?.length ?? 0} · {dict.galleryManage.statsDownloads}: {downloadCount ?? 0} ·{' '}
+            {dict.galleryManage.statsFavorites}: {totalFavorites}
           </span>
         </div>
 
@@ -115,21 +136,29 @@ export default async function ManageGalleryPage({
           <p className="max-w-xl leading-relaxed text-muted">{dict.galleryManage.noAssets}</p>
         ) : (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-            {previews.map(({ asset, url }) => (
-              <div key={asset.id} className="aspect-square overflow-hidden bg-line">
-                {asset.kind === 'photo' ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={url}
-                    alt=""
-                    loading="lazy"
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <video src={url} className="h-full w-full object-cover" muted />
-                )}
-              </div>
-            ))}
+            {previews.map(({ asset, url }) => {
+              const favoritedBy = favoriteCounts.get(asset.id) ?? 0
+              return (
+                <div key={asset.id} className="relative aspect-square overflow-hidden bg-line">
+                  {asset.kind === 'photo' ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={url}
+                      alt=""
+                      loading="lazy"
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <video src={url} className="h-full w-full object-cover" muted />
+                  )}
+                  {favoritedBy > 0 && (
+                    <span className="absolute right-2 top-2 bg-bg/90 px-2 py-0.5 text-xs text-accent">
+                      ♥ {favoritedBy}
+                    </span>
+                  )}
+                </div>
+              )
+            })}
           </div>
         )}
       </section>

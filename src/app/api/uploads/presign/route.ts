@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { getStorage, originalKey } from '@/lib/storage'
+import { getStorage, isVariantName, originalKey, variantKey } from '@/lib/storage'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 
 export const runtime = 'nodejs'
@@ -11,6 +11,8 @@ interface PresignBody {
   fileName: string
   contentType: string
   sizeBytes: number
+  /** When set, this presign is for a generated rendition, stored under v/. */
+  variant?: string
 }
 
 function isPresignBody(value: unknown): value is PresignBody {
@@ -20,7 +22,8 @@ function isPresignBody(value: unknown): value is PresignBody {
     typeof v.galleryId === 'string' &&
     typeof v.fileName === 'string' &&
     typeof v.contentType === 'string' &&
-    typeof v.sizeBytes === 'number'
+    typeof v.sizeBytes === 'number' &&
+    (v.variant === undefined || typeof v.variant === 'string')
   )
 }
 
@@ -76,7 +79,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'storage_quota_exceeded' }, { status: 403 })
   }
 
-  const key = originalKey(user.id, body.galleryId, body.fileName)
+  if (body.variant !== undefined && !isVariantName(body.variant)) {
+    return NextResponse.json({ error: 'unknown_variant' }, { status: 400 })
+  }
+
+  const key = body.variant
+    ? variantKey(user.id, body.galleryId, body.variant)
+    : originalKey(user.id, body.galleryId, body.fileName)
   const { url } = await getStorage().getUploadUrl({
     key,
     contentType: body.contentType,

@@ -44,3 +44,14 @@ export function originalKey(ownerId: string, galleryId: string, fileName: string
     .slice(-80)
   return `${galleryPrefix(ownerId, galleryId)}o/${crypto.randomUUID()}-${safeName}`
 }
+
+export const VARIANT_NAMES = ['preview', 'thumb'] as const
+export type VariantName = (typeof VARIANT_NAMES)[number]
+
+export function isVariantName(value: string): value is VariantName {
+  return (VARIANT_NAMES as readonly string[]).includes(value)
+}
+
+export function variantKey(ownerId: string, galleryId: string, variant: VariantName): string {
+  return `${galleryPrefix(ownerId, galleryId)}v/${crypto.randomUUID()}-${variant}.jpg`
+}
