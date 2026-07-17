@@ -48,6 +48,12 @@ export default async function DashboardPage({ params }: { params: { locale: stri
             </span>
           )}
           <Link
+            href={`/${locale}/dashboard/site`}
+            className="text-sm text-muted underline hover:text-fg"
+          >
+            {dict.site.navLink}
+          </Link>
+          <Link
             href={`/${locale}/dashboard/booking`}
             className="text-sm text-muted underline hover:text-fg"
           >

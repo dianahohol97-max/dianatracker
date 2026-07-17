@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { monoStatement } from '@/lib/booking/monoPersonal'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import type { Locale } from '@/lib/i18n/config'
 
@@ -27,12 +28,21 @@ export async function saveBookingSettings(locale: Locale, formData: FormData): P
     throw new Error('Handle must be 3-32 chars: latin letters, digits, dashes')
   }
 
+  const releaseHours = Number(formData.get('unpaid_release_hours') ?? 24)
+
   const { error } = await supabase.from('booking_settings').upsert(
     {
       user_id: user.id,
       enabled: formData.get('enabled') === 'on',
       handle,
       notify_email: str(formData, 'notify_email'),
+      unpaid_release_hours:
+        Number.isFinite(releaseHours) && releaseHours >= 0 && releaseHours <= 336
+          ? Math.round(releaseHours)
+          : 24,
+      auto_confirm_manual: formData.get('auto_confirm_manual') === 'on',
+      mono_personal_token: str(formData, 'mono_personal_token'),
+      mono_personal_account: str(formData, 'mono_personal_account') ?? '0',
       mono_enabled: formData.get('mono_enabled') === 'on',
       mono_token: str(formData, 'mono_token'),
       wfp_enabled: formData.get('wfp_enabled') === 'on',
@@ -93,6 +103,86 @@ export async function markSlotPaid(locale: Locale, slotId: string): Promise<void
     .eq('id', slotId)
     .eq('status', 'booked')
   if (error) throw new Error(`Failed to mark paid: ${error.message}`)
+  revalidatePath(`/${locale}/dashboard/booking`)
+}
+
+/**
+ * Auto-confirm manual payments: reads the photographer's Monobank personal
+ * statement (their own token, owner-scoped under RLS) and matches incoming
+ * credits to booked slots by exact amount received after booking time.
+ * Each statement entry confirms at most one slot (invoice_id = 'stmt:<id>').
+ * Personal API allows 1 request/min — guarded by last_statement_check.
+ */
+export async function checkManualPayments(locale: Locale): Promise<void> {
+  const { supabase, user } = await requireUser()
+
+  const { data: settings } = await supabase
+    .from('booking_settings')
+    .select('auto_confirm_manual, mono_personal_token, mono_personal_account, last_statement_check')
+    .eq('user_id', user.id)
+    .maybeSingle()
+  if (!settings?.auto_confirm_manual || !settings.mono_personal_token) return
+
+  if (
+    settings.last_statement_check &&
+    Date.now() - new Date(settings.last_statement_check).getTime() < 60_000
+  ) {
+    return // rate limit: Monobank personal API is 1 req/min
+  }
+  await supabase
+    .from('booking_settings')
+    .update({ last_statement_check: new Date().toISOString() })
+    .eq('user_id', user.id)
+
+  // Candidates: booked, priced, and NOT in an auto-provider flow.
+  const { data: slots } = await supabase
+    .from('booking_slots')
+    .select('id, price_uah, booked_at')
+    .eq('owner_id', user.id)
+    .eq('status', 'booked')
+    .is('payment_method', null)
+    .gt('price_uah', 0)
+    .order('booked_at')
+  if (!slots || slots.length === 0) return
+
+  const earliest = Math.min(...slots.map((s) => new Date(s.booked_at ?? 0).getTime()))
+  const entries = await monoStatement(
+    settings.mono_personal_token,
+    settings.mono_personal_account ?? '0',
+    Math.floor(earliest / 1000)
+  )
+  if (entries.length === 0) return
+
+  // Entries already used to confirm a slot must not confirm another one.
+  const { data: used } = await supabase
+    .from('booking_slots')
+    .select('invoice_id')
+    .eq('owner_id', user.id)
+    .like('invoice_id', 'stmt:%')
+  const usedIds = new Set((used ?? []).map((r) => r.invoice_id as string))
+
+  for (const slot of slots) {
+    const bookedAt = new Date(slot.booked_at ?? 0).getTime() / 1000
+    const match = entries.find(
+      (entry) =>
+        !usedIds.has(`stmt:${entry.id}`) &&
+        entry.amount === Math.round(Number(slot.price_uah) * 100) &&
+        entry.time >= bookedAt
+    )
+    if (!match) continue
+    usedIds.add(`stmt:${match.id}`)
+    await supabase
+      .from('booking_slots')
+      .update({
+        status: 'paid',
+        paid_at: new Date(match.time * 1000).toISOString(),
+        payment_method: 'manual',
+        invoice_id: `stmt:${match.id}`,
+      })
+      .eq('id', slot.id)
+      .eq('status', 'booked')
+  }
+
   revalidatePath(`/${locale}/dashboard/booking`)
 }
 

@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import {
   addBookingSlot,
+  checkManualPayments,
   deleteBookingSlot,
   markSlotPaid,
   reopenSlot,
@@ -26,6 +27,10 @@ export default async function BookingDashboardPage({ params }: { params: { local
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) redirect(`/${locale}/login`)
+
+  // Lazily free bookings whose payment window expired (same function the
+  // public page uses), so the dashboard always shows current reality.
+  await supabase.rpc('release_expired_slots', { p_owner: user.id })
 
   const [{ data: settings }, { data: slots }] = await Promise.all([
     supabase
@@ -102,6 +107,22 @@ export default async function BookingDashboardPage({ params }: { params: { local
           />
         </div>
 
+        <div className="flex flex-col gap-1">
+          <label className="text-sm text-muted" htmlFor="unpaid_release_hours">
+            {dict.booking.releaseHoursLabel}
+          </label>
+          <input
+            id="unpaid_release_hours"
+            name="unpaid_release_hours"
+            type="number"
+            min={0}
+            max={336}
+            defaultValue={settings?.unpaid_release_hours ?? 24}
+            className={`${inputClass} w-28`}
+          />
+          <p className="text-xs text-muted">{dict.booking.releaseHoursHint}</p>
+        </div>
+
         <h2 className="mt-2 font-display text-2xl">{dict.booking.payTitle}</h2>
         <p className="text-xs leading-relaxed text-muted">{dict.booking.payHint}</p>
 
@@ -168,6 +189,30 @@ export default async function BookingDashboardPage({ params }: { params: { local
           />
         </fieldset>
 
+        <fieldset className="flex flex-col gap-2 border-t border-line pt-4">
+          <label className="flex items-center gap-3 text-sm">
+            <input
+              type="checkbox"
+              name="auto_confirm_manual"
+              defaultChecked={settings?.auto_confirm_manual}
+            />
+            {dict.booking.autoConfirmLabel}
+          </label>
+          <p className="text-xs leading-relaxed text-muted">{dict.booking.autoConfirmHint}</p>
+          <input
+            name="mono_personal_token"
+            defaultValue={settings?.mono_personal_token ?? ''}
+            placeholder={dict.booking.personalTokenLabel}
+            className={inputClass}
+          />
+          <input
+            name="mono_personal_account"
+            defaultValue={settings?.mono_personal_account ?? '0'}
+            placeholder={dict.booking.personalAccountLabel}
+            className={inputClass}
+          />
+        </fieldset>
+
         <button
           type="submit"
           className="mt-2 self-start border border-fg px-8 py-3 text-sm uppercase tracking-widest transition-colors hover:bg-fg hover:text-bg"
@@ -178,7 +223,16 @@ export default async function BookingDashboardPage({ params }: { params: { local
 
       {/* -------- slots -------- */}
       <section className="mt-14">
-        <h2 className="font-display text-2xl">{dict.booking.slotsTitle}</h2>
+        <div className="flex flex-wrap items-baseline justify-between gap-4">
+          <h2 className="font-display text-2xl">{dict.booking.slotsTitle}</h2>
+          {settings?.auto_confirm_manual && settings.mono_personal_token && (
+            <form action={checkManualPayments.bind(null, locale)}>
+              <button type="submit" className="text-sm underline hover:text-accent">
+                {dict.booking.checkPayments}
+              </button>
+            </form>
+          )}
+        </div>
         <p className="mt-2 max-w-xl text-xs leading-relaxed text-muted">
           {dict.booking.bookedNote}
         </p>

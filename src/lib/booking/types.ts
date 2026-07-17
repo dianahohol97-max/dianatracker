@@ -15,6 +15,11 @@ export interface BookingSettings {
   manual_link: string | null
   card_enabled: boolean
   card_details: string | null
+  unpaid_release_hours: number
+  auto_confirm_manual: boolean
+  mono_personal_token: string | null
+  mono_personal_account: string
+  last_statement_check: string | null
   created_at: string
   updated_at: string
 }
