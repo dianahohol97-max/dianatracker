@@ -435,5 +435,7 @@ const en: LandingCopy = {
 }
 
 export function getLandingCopy(locale: Locale): LandingCopy {
-  return locale === 'en' ? en : uk
+  // Only Ukrainian is fully authored for marketing; every other locale gets
+  // English (client languages don't have a translated landing page).
+  return locale === 'uk' ? uk : en
 }

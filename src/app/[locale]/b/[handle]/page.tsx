@@ -4,6 +4,7 @@ import { isLocale } from '@/lib/i18n/config'
 import { getStorage } from '@/lib/storage'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { BookingWidget, type PublicSlot } from '@/components/BookingWidget'
+import { LangPicker } from '@/components/LangPicker'
 
 export const dynamic = 'force-dynamic'
 
@@ -59,6 +60,9 @@ export default async function PublicBookingPage({
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-16">
+      <div className="mb-8 flex justify-end">
+        <LangPicker current={locale} />
+      </div>
       <header className="text-center">
         {logoUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
