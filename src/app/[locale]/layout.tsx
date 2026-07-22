@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { isLocale, locales } from '@/lib/i18n/config'
+import { GoogleAnalytics } from '@/components/analytics/GoogleAnalytics'
 import '@/app/globals.css'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
@@ -94,6 +95,7 @@ export default function LocaleLayout({
   return (
     <html lang={params.locale}>
       <body className="min-h-screen bg-bg text-fg antialiased">{children}</body>
+      <GoogleAnalytics />
     </html>
   )
 }
