@@ -20,7 +20,9 @@
 .page :global(.rv.in) { opacity: 1; transform: none; }
 
 /* photo placeholders */
-.ph { position: relative; overflow: hidden; background-color: #dedcd6; background-size: cover; background-position: center; border-radius: 12px; }
+/* Bias the crop toward the top: faces sit in the upper part of a frame, so
+   center-cropping a `cover` background clips heads. 28% keeps them in view. */
+.ph { position: relative; overflow: hidden; background-color: #dedcd6; background-size: cover; background-position: center 28%; border-radius: 12px; }
 
 /* real showcase photography (one photographer's body of work) */
 .p01 { background-image: url("/showcase/01.jpg"); }
