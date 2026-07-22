@@ -2,10 +2,13 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import type { PricingItem, SiteContent } from '@/lib/site/content'
+import type { PricingItem, SiteContent, SiteTextBlocks } from '@/lib/site/content'
 import { THEME_CATALOG } from '@/lib/site/themes'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
-import type { Locale } from '@/lib/i18n/config'
+import { locales, type Locale } from '@/lib/i18n/config'
+
+/** Every language a site can be offered in besides the Ukrainian base. */
+const EXTRA_LOCALES = locales.filter((l): l is Locale => l !== 'uk')
 
 async function requireUser() {
   const supabase = createSupabaseServerClient()
@@ -43,6 +46,22 @@ export async function saveSite(locale: Locale, formData: FormData): Promise<void
     }))
     .filter((item) => item.name)
 
+  // Enabled languages + their per-language text blocks. Translation fields are
+  // kept even for a language that is momentarily unchecked, so toggling a
+  // language off never silently discards text the photographer already typed.
+  const languages = EXTRA_LOCALES.filter((l) => formData.get(`lang_${l}`) === 'on')
+  const translations: Record<string, SiteTextBlocks> = {}
+  for (const l of EXTRA_LOCALES) {
+    const block: SiteTextBlocks = {
+      hero: {
+        title: str(formData, `t_${l}_hero_title`),
+        subtitle: str(formData, `t_${l}_hero_subtitle`),
+      },
+      about: { text: str(formData, `t_${l}_about_text`) },
+    }
+    if (block.hero.title || block.hero.subtitle || block.about.text) translations[l] = block
+  }
+
   const content: SiteContent = {
     hero: { title: str(formData, 'hero_title'), subtitle: str(formData, 'hero_subtitle') },
     about: { text: str(formData, 'about_text') },
@@ -53,15 +72,9 @@ export async function saveSite(locale: Locale, formData: FormData): Promise<void
       instagram: str(formData, 'contact_instagram'),
       bookingUrl: str(formData, 'contact_booking_url'),
     },
-    en: {
-      hero: {
-        title: str(formData, 'en_hero_title'),
-        subtitle: str(formData, 'en_hero_subtitle'),
-      },
-      about: { text: str(formData, 'en_about_text') },
-    },
+    translations,
     settings: {
-      bilingual: formData.get('opt_bilingual') === 'on',
+      languages,
       leadForm: formData.get('opt_lead_form') === 'on',
     },
   }

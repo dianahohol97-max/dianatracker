@@ -21,12 +21,11 @@ function Lang({ langSwitch }: { langSwitch?: LangSwitch }) {
   if (!langSwitch) return null
   return (
     <span className={s.tLang}>
-      <a href={langSwitch.hrefUk} style={{ opacity: langSwitch.current === 'uk' ? 1 : 0.5 }}>
-        UA
-      </a>
-      <a href={langSwitch.hrefEn} style={{ opacity: langSwitch.current === 'en' ? 1 : 0.5 }}>
-        EN
-      </a>
+      {langSwitch.options.map((o) => (
+        <a key={o.locale} href={o.href} hrefLang={o.locale} style={{ opacity: o.current ? 1 : 0.5 }}>
+          {o.label}
+        </a>
+      ))}
     </span>
   )
 }

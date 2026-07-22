@@ -48,16 +48,12 @@ export function ThemeGallery({
             {content.about.text && <a href="#about">{labels.about}</a>}
             {content.pricing.items.length > 0 && <a href="#pricing">{labels.pricing}</a>}
             <a href="#contact">{labels.contacts}</a>
-            {langSwitch && (
-              <>
-                <a href={langSwitch.hrefUk} style={{ opacity: langSwitch.current === 'uk' ? 1 : 0.5 }}>
-                  UA
+            {langSwitch &&
+              langSwitch.options.map((o) => (
+                <a key={o.locale} href={o.href} hrefLang={o.locale} style={{ opacity: o.current ? 1 : 0.5 }}>
+                  {o.label}
                 </a>
-                <a href={langSwitch.hrefEn} style={{ opacity: langSwitch.current === 'en' ? 1 : 0.5 }}>
-                  EN
-                </a>
-              </>
-            )}
+              ))}
           </nav>
         </div>
 

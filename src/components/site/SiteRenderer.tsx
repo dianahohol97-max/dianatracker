@@ -53,11 +53,17 @@ export interface SiteLabels {
   book: string
 }
 
-/** UA ⇄ EN switcher for bilingual sites; hrefs point at the locale routes. */
+/** One selectable language in a site's switcher. */
+export interface LangSwitchOption {
+  locale: string
+  href: string
+  label: string
+  current: boolean
+}
+
+/** Multilingual switcher for sites offered in more than one language. */
 export interface LangSwitch {
-  current: 'uk' | 'en'
-  hrefUk: string
-  hrefEn: string
+  options: LangSwitchOption[]
 }
 
 /**
@@ -206,28 +212,21 @@ export function SiteRenderer({
             <a href="#contact" style={{ color: 'inherit', textDecoration: 'none' }}>{labels.contacts}</a>
             {langSwitch && (
               <span style={{ display: 'inline-flex', gap: 8 }}>
-                <a
-                  href={langSwitch.hrefUk}
-                  style={{
-                    color: 'inherit',
-                    textDecoration: langSwitch.current === 'uk' ? 'underline' : 'none',
-                    textUnderlineOffset: 3,
-                    opacity: langSwitch.current === 'uk' ? 1 : 0.55,
-                  }}
-                >
-                  UA
-                </a>
-                <a
-                  href={langSwitch.hrefEn}
-                  style={{
-                    color: 'inherit',
-                    textDecoration: langSwitch.current === 'en' ? 'underline' : 'none',
-                    textUnderlineOffset: 3,
-                    opacity: langSwitch.current === 'en' ? 1 : 0.55,
-                  }}
-                >
-                  EN
-                </a>
+                {langSwitch.options.map((o) => (
+                  <a
+                    key={o.locale}
+                    href={o.href}
+                    hrefLang={o.locale}
+                    style={{
+                      color: 'inherit',
+                      textDecoration: o.current ? 'underline' : 'none',
+                      textUnderlineOffset: 3,
+                      opacity: o.current ? 1 : 0.55,
+                    }}
+                  >
+                    {o.label}
+                  </a>
+                ))}
               </span>
             )}
           </nav>
