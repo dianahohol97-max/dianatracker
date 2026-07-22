@@ -1,12 +1,16 @@
 import Script from 'next/script'
 
+/** proiav.space GA4 stream; override per-environment with NEXT_PUBLIC_GA_ID. */
+const DEFAULT_GA_ID = 'G-VV417KX665'
+
 /**
- * Google Analytics 4 — loads only when NEXT_PUBLIC_GA_ID is set (e.g.
- * "G-XXXXXXX"), so local/dev and un-configured deployments stay clean.
- * afterInteractive keeps it out of the critical render path.
+ * Google Analytics 4. Uses NEXT_PUBLIC_GA_ID when set, otherwise the
+ * production stream above. A Measurement ID is public (it ships in every
+ * page's HTML), so hardcoding the default is safe. afterInteractive keeps it
+ * out of the critical render path.
  */
 export function GoogleAnalytics() {
-  const id = process.env.NEXT_PUBLIC_GA_ID
+  const id = process.env.NEXT_PUBLIC_GA_ID || DEFAULT_GA_ID
   if (!id) return null
   return (
     <>
