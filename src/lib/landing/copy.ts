@@ -208,17 +208,7 @@ const uk: LandingCopy = {
       pro: {
         name: 'Про',
         note: 'Для щільного календаря зйомок',
-        bullets: ['Все з Плюса', 'Пріоритетна підтримка'],
-      },
-      max: {
-        name: 'Максимальний',
-        note: 'Великі архіви під рукою',
-        bullets: ['1 ТБ сховища', 'Все з Про'],
-      },
-      maxplus: {
-        name: 'Максимальний+',
-        note: 'Студійний масштаб',
-        bullets: ['2 ТБ сховища', 'Все з Про'],
+        bullets: ['Все з Плюса', 'Пріоритетна підтримка', '500 ГБ сховища'],
       },
     },
     planCta: 'Обрати',
@@ -397,17 +387,7 @@ const en: LandingCopy = {
       pro: {
         name: 'Pro',
         note: 'For a dense shooting calendar',
-        bullets: ['Everything in Plus', 'Priority support'],
-      },
-      max: {
-        name: 'Max',
-        note: 'Large archives at hand',
-        bullets: ['1 TB of storage', 'Everything in Pro'],
-      },
-      maxplus: {
-        name: 'Max+',
-        note: 'Studio scale',
-        bullets: ['2 TB of storage', 'Everything in Pro'],
+        bullets: ['Everything in Plus', 'Priority support', '500 GB of storage'],
       },
     },
     planCta: 'Choose',

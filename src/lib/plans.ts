@@ -8,7 +8,7 @@
  * abstraction. Yearly = two months free.
  */
 
-export type GalleryPlanId = 'free' | 'basic' | 'plus' | 'pro' | 'max' | 'maxplus'
+export type GalleryPlanId = 'free' | 'basic' | 'plus' | 'pro'
 export type SitePlanId = 'site_trial' | 'site_basic' | 'site_plus'
 export type BillingPeriod = 'month' | 'year'
 
@@ -87,38 +87,6 @@ export const GALLERY_PLANS: Record<GalleryPlanId, GalleryPlan> = {
     storageGb: 500,
     priceUahMonth: 599,
     priceUahYear: 5990,
-    backend: 'b2',
-    features: {
-      ...baseFeatures,
-      brandingRemoval: true,
-      photographerLogo: true,
-      video: true,
-      stats: true,
-      tips: true,
-      prioritySupport: true,
-    },
-  },
-  max: {
-    id: 'max',
-    storageGb: 1024,
-    priceUahMonth: 999,
-    priceUahYear: 9990,
-    backend: 'b2',
-    features: {
-      ...baseFeatures,
-      brandingRemoval: true,
-      photographerLogo: true,
-      video: true,
-      stats: true,
-      tips: true,
-      prioritySupport: true,
-    },
-  },
-  maxplus: {
-    id: 'maxplus',
-    storageGb: 2048,
-    priceUahMonth: 1699,
-    priceUahYear: 16990,
     backend: 'b2',
     features: {
       ...baseFeatures,
