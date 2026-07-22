@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { isLocale } from '@/lib/i18n/config'
+import { jsonLdScript } from '@/lib/jsonld'
 import { getLandingCopy } from '@/lib/landing/copy'
 import {
   GALLERY_PLANS,
@@ -77,7 +78,7 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
     <main className={s.page}>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(jsonLd) }}
       />
       <div className={s.wrap}>
         {/* ---------- nav ---------- */}

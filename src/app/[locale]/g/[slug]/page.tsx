@@ -165,13 +165,15 @@ export default async function PublicGalleryPage({
   const clientToken = cookies().get('ct')?.value
   let initialFavorites: string[] = []
   if (clientToken) {
-    const { data: selections } = await supabase
-      .from('selections')
-      .select('asset_id')
-      .eq('gallery_id', gallery.id)
-      .eq('client_token', clientToken)
-      .eq('kind', 'favorite')
-    initialFavorites = (selections ?? []).map((s: { asset_id: string }) => s.asset_id)
+    // Token-scoped RPC — the selections table is no longer readable directly
+    // by the anon key, so this can only ever return this client's own picks.
+    const { data: selections } = await supabase.rpc('list_selections', {
+      p_gallery: gallery.id,
+      p_token: clientToken,
+    })
+    initialFavorites = ((selections ?? []) as { asset_id: string; kind: string }[])
+      .filter((s) => s.kind === 'favorite')
+      .map((s) => s.asset_id)
   }
 
   const eventLine = [
