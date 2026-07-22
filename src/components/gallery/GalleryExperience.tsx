@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Zip, ZipPassThrough } from 'fflate'
 import { resolveTokens, type SiteMode, type ThemeId } from '@/lib/site/themes'
+import { isLocale, type Locale } from '@/lib/i18n/config'
+import { LangPicker } from '@/components/LangPicker'
 import s from './GalleryExperience.module.css'
 
 export interface GalleryItem {
@@ -239,42 +241,21 @@ export function GalleryExperience({
           {eventLine && <span className={s.caps}>{eventLine}</span>}
         </div>
         <span className={`${s.caps} ${s.scrollHint}`}>{labels.scrollHint}</span>
-        {/* UA/EN switcher: client galleries serve international guests too. */}
-        <nav
+        {/* Language switcher: client galleries serve international guests too. */}
+        <div
           className={s.caps}
           style={{
             position: 'absolute',
             top: 18,
             right: 20,
-            display: 'flex',
-            gap: 10,
             zIndex: 2,
-            color: 'rgba(247, 244, 238, 0.85)',
+            maxWidth: 220,
+            textAlign: 'right',
+            color: 'rgba(247, 244, 238, 0.9)',
           }}
         >
-          <a
-            href={`/uk/g/${slug}`}
-            style={{
-              color: 'inherit',
-              textDecoration: locale === 'uk' ? 'underline' : 'none',
-              textUnderlineOffset: 3,
-              opacity: locale === 'uk' ? 1 : 0.6,
-            }}
-          >
-            UA
-          </a>
-          <a
-            href={`/en/g/${slug}`}
-            style={{
-              color: 'inherit',
-              textDecoration: locale === 'en' ? 'underline' : 'none',
-              textUnderlineOffset: 3,
-              opacity: locale === 'en' ? 1 : 0.6,
-            }}
-          >
-            EN
-          </a>
-        </nav>
+          <LangPicker current={isLocale(locale) ? locale : ('uk' as Locale)} />
+        </div>
       </header>
 
       {/* -------- sticky bar -------- */}

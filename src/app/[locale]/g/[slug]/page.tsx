@@ -8,6 +8,7 @@ import { resolveGalleryTheme } from '@/lib/site/themes'
 import { getStorage } from '@/lib/storage'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { GalleryExperience, type GalleryItem } from '@/components/gallery/GalleryExperience'
+import { LangPicker } from '@/components/LangPicker'
 import type { Asset } from '@/lib/types'
 
 export const dynamic = 'force-dynamic'
@@ -66,6 +67,9 @@ export default async function PublicGalleryPage({
   if (!isGalleryUnlocked(gallery)) {
     return (
       <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6">
+        <div className="absolute right-6 top-6">
+          <LangPicker current={locale} />
+        </div>
         <h1 className="font-display text-3xl">{gallery.title}</h1>
         <p className="mt-4 text-muted">{dict.publicGallery.passwordTitle}</p>
         <form
