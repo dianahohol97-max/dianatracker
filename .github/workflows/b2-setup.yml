@@ -63,7 +63,7 @@ jobs:
             headers={'Authorization':'Basic '+base64.b64encode(f'{kid}:{ak}'.encode()).decode()})
           auth=json.load(urllib.request.urlopen(areq, timeout=20))
           api_url=auth['apiInfo']['storageApi']['apiUrl']
-          account_id=auth['apiInfo']['storageApi']['accountId']
+          account_id=auth['accountId']
           token=auth['authorizationToken']
           cors=[{'corsRuleName':'browserUploads',
             'allowedOrigins':['https://proiav.space','https://www.proiav.space'],
