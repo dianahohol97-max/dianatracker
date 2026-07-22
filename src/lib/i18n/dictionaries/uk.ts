@@ -291,7 +291,7 @@ export const uk = {
     planFree: 'Безкоштовний',
     planBasic: 'Базовий',
     planPlus: 'Плюс',
-    planPro: 'Про',
+    planPro: 'Максимальний',
     planMax: 'Максимальний',
     planMaxPlus: 'Максимальний+',
     sitePlanTrial: 'Пробний',

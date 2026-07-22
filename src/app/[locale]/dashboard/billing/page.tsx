@@ -64,16 +64,12 @@ export default async function BillingPage({ params }: { params: { locale: string
     basic: dict.billing.planBasic,
     plus: dict.billing.planPlus,
     pro: dict.billing.planPro,
-    max: dict.billing.planMax,
-    maxplus: dict.billing.planMaxPlus,
   }
   const galleryNotes: Record<GalleryPlanId, string> = {
     free: dict.billing.noteFree,
     basic: dict.billing.noteBasic,
     plus: dict.billing.notePlus,
     pro: dict.billing.notePro,
-    max: dict.billing.noteMax,
-    maxplus: dict.billing.noteMaxPlus,
   }
   const siteNames: Record<SitePlanId, string> = {
     site_trial: dict.billing.sitePlanTrial,

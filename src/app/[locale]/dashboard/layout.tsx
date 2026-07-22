@@ -53,8 +53,6 @@ export default async function DashboardLayout({
           basic: dict.billing.planBasic,
           plus: dict.billing.planPlus,
           pro: dict.billing.planPro,
-          max: dict.billing.planMax,
-          maxplus: dict.billing.planMaxPlus,
         }[profile.plan]
       : profile?.plan
 

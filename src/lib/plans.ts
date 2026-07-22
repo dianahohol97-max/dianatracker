@@ -8,7 +8,7 @@
  * abstraction. Yearly = two months free.
  */
 
-export type GalleryPlanId = 'free' | 'basic' | 'plus' | 'pro' | 'max' | 'maxplus'
+export type GalleryPlanId = 'free' | 'basic' | 'plus' | 'pro'
 export type SitePlanId = 'site_trial' | 'site_basic' | 'site_plus'
 export type BillingPeriod = 'month' | 'year'
 
@@ -61,18 +61,18 @@ export const GALLERY_PLANS: Record<GalleryPlanId, GalleryPlan> = {
   },
   basic: {
     id: 'basic',
-    storageGb: 50,
-    priceUahMonth: 149,
-    priceUahYear: 1490,
-    backend: 'r2',
+    storageGb: 100,
+    priceUahMonth: 79,
+    priceUahYear: 790,
+    backend: 'b2',
     features: { ...baseFeatures, brandingRemoval: true, photographerLogo: true },
   },
   plus: {
     id: 'plus',
-    storageGb: 200,
-    priceUahMonth: 369,
-    priceUahYear: 3690,
-    backend: 'r2',
+    storageGb: 500,
+    priceUahMonth: 319,
+    priceUahYear: 3190,
+    backend: 'b2',
     features: {
       ...baseFeatures,
       brandingRemoval: true,
@@ -84,41 +84,9 @@ export const GALLERY_PLANS: Record<GalleryPlanId, GalleryPlan> = {
   },
   pro: {
     id: 'pro',
-    storageGb: 500,
-    priceUahMonth: 599,
-    priceUahYear: 5990,
-    backend: 'b2',
-    features: {
-      ...baseFeatures,
-      brandingRemoval: true,
-      photographerLogo: true,
-      video: true,
-      stats: true,
-      tips: true,
-      prioritySupport: true,
-    },
-  },
-  max: {
-    id: 'max',
     storageGb: 1024,
-    priceUahMonth: 999,
-    priceUahYear: 9990,
-    backend: 'b2',
-    features: {
-      ...baseFeatures,
-      brandingRemoval: true,
-      photographerLogo: true,
-      video: true,
-      stats: true,
-      tips: true,
-      prioritySupport: true,
-    },
-  },
-  maxplus: {
-    id: 'maxplus',
-    storageGb: 2048,
-    priceUahMonth: 1699,
-    priceUahYear: 16990,
+    priceUahMonth: 559,
+    priceUahYear: 5590,
     backend: 'b2',
     features: {
       ...baseFeatures,

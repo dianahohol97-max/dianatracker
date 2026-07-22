@@ -274,7 +274,7 @@ export const en: Dictionary = {
     planFree: 'Free',
     planBasic: 'Basic',
     planPlus: 'Plus',
-    planPro: 'Pro',
+    planPro: 'Maximum',
     planMax: 'Max',
     planMaxPlus: 'Max+',
     sitePlanTrial: 'Trial',
