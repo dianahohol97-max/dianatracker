@@ -10,6 +10,12 @@ export interface PricingItem {
   includes: string[]
 }
 
+/** The text blocks that can be translated per language (hero + about). */
+export interface SiteTextBlocks {
+  hero: { title: string; subtitle: string }
+  about: { text: string }
+}
+
 export interface SiteContent {
   hero: { title: string; subtitle: string }
   about: { text: string }
@@ -20,14 +26,15 @@ export interface SiteContent {
     instagram: string
     bookingUrl: string
   }
-  /** Optional English variant of the text blocks (bilingual sites). */
-  en: {
-    hero: { title: string; subtitle: string }
-    about: { text: string }
-  }
+  /**
+   * Per-language overrides of the text blocks, keyed by locale (e.g. 'en',
+   * 'pl', 'de'). The base fields above are the default (Ukrainian); a client
+   * on /{locale}/s/... sees the matching translation, falling back per field.
+   */
+  translations: Record<string, SiteTextBlocks>
   settings: {
-    /** Show the UA/EN switcher and serve `en` texts on the /en route. */
-    bilingual: boolean
+    /** Extra languages the site is offered in (besides the Ukrainian base). */
+    languages: string[]
     /** Render the lead form in the contact block. */
     leadForm: boolean
   }
@@ -38,24 +45,40 @@ export const EMPTY_CONTENT: SiteContent = {
   about: { text: '' },
   pricing: { items: [] },
   contact: { email: '', phone: '', instagram: '', bookingUrl: '' },
-  en: { hero: { title: '', subtitle: '' }, about: { text: '' } },
-  settings: { bilingual: false, leadForm: false },
+  translations: {},
+  settings: { languages: [], leadForm: false },
 }
 
 /**
- * Content as the visitor should see it: on the English route of a bilingual
- * site the translated text blocks override the Ukrainian ones (falling back
- * per-field, so a missing translation never blanks a block).
+ * Content as the visitor should see it: on a non-Ukrainian route the
+ * translated text blocks override the base ones (falling back per field, so a
+ * missing translation never blanks a block).
  */
 export function localizedSiteContent(content: SiteContent, locale: string): SiteContent {
-  if (locale !== 'en' || !content.settings.bilingual) return content
+  if (locale === 'uk') return content
+  const t = content.translations[locale]
+  if (!t) return content
   return {
     ...content,
     hero: {
-      title: content.en.hero.title || content.hero.title,
-      subtitle: content.en.hero.subtitle || content.hero.subtitle,
+      title: t.hero.title || content.hero.title,
+      subtitle: t.hero.subtitle || content.hero.subtitle,
     },
-    about: { text: content.en.about.text || content.about.text },
+    about: { text: t.about.text || content.about.text },
+  }
+}
+
+function asString(value: unknown): string {
+  return typeof value === 'string' ? value : ''
+}
+
+function parseTextBlocks(value: unknown): SiteTextBlocks {
+  const t = (typeof value === 'object' && value !== null ? value : {}) as Record<string, unknown>
+  const hero = (t.hero ?? {}) as Record<string, unknown>
+  const about = (t.about ?? {}) as Record<string, unknown>
+  return {
+    hero: { title: asString(hero.title), subtitle: asString(hero.subtitle) },
+    about: { text: asString(about.text) },
   }
 }
 
@@ -66,26 +89,43 @@ export function parseSiteContent(value: unknown): SiteContent {
   const about = (v.about ?? {}) as Record<string, unknown>
   const pricing = (v.pricing ?? {}) as Record<string, unknown>
   const contact = (v.contact ?? {}) as Record<string, unknown>
-  const en = (typeof v.en === 'object' && v.en !== null ? v.en : {}) as Record<string, unknown>
-  const enHero = (en.hero ?? {}) as Record<string, unknown>
-  const enAbout = (en.about ?? {}) as Record<string, unknown>
   const settings = (
     typeof v.settings === 'object' && v.settings !== null ? v.settings : {}
   ) as Record<string, unknown>
   const items = Array.isArray(pricing.items) ? pricing.items : []
 
+  // Per-language translations.
+  const rawTranslations = (
+    typeof v.translations === 'object' && v.translations !== null ? v.translations : {}
+  ) as Record<string, unknown>
+  const translations: Record<string, SiteTextBlocks> = {}
+  for (const [loc, tv] of Object.entries(rawTranslations)) {
+    translations[loc] = parseTextBlocks(tv)
+  }
+  // Migrate the legacy single `en` block into translations.en.
+  if (!translations.en && typeof v.en === 'object' && v.en !== null) {
+    const legacy = parseTextBlocks(v.en)
+    if (legacy.hero.title || legacy.hero.subtitle || legacy.about.text) translations.en = legacy
+  }
+
+  // Enabled languages: explicit list, else derived from the legacy bilingual flag.
+  let languages = Array.isArray(settings.languages)
+    ? settings.languages.filter((l): l is string => typeof l === 'string' && l !== 'uk')
+    : []
+  if (languages.length === 0 && settings.bilingual === true) languages = ['en']
+
   return {
     hero: {
-      title: typeof hero.title === 'string' ? hero.title : '',
-      subtitle: typeof hero.subtitle === 'string' ? hero.subtitle : '',
+      title: asString(hero.title),
+      subtitle: asString(hero.subtitle),
     },
-    about: { text: typeof about.text === 'string' ? about.text : '' },
+    about: { text: asString(about.text) },
     pricing: {
       items: items
         .filter((i): i is Record<string, unknown> => typeof i === 'object' && i !== null)
         .map((i) => ({
-          name: typeof i.name === 'string' ? i.name : '',
-          price: typeof i.price === 'string' ? i.price : '',
+          name: asString(i.name),
+          price: asString(i.price),
           includes: Array.isArray(i.includes)
             ? i.includes.filter((line): line is string => typeof line === 'string' && !!line)
             : // legacy shape: a single description becomes the first line
@@ -96,20 +136,14 @@ export function parseSiteContent(value: unknown): SiteContent {
         .filter((i) => i.name),
     },
     contact: {
-      email: typeof contact.email === 'string' ? contact.email : '',
-      phone: typeof contact.phone === 'string' ? contact.phone : '',
-      instagram: typeof contact.instagram === 'string' ? contact.instagram : '',
-      bookingUrl: typeof contact.bookingUrl === 'string' ? contact.bookingUrl : '',
+      email: asString(contact.email),
+      phone: asString(contact.phone),
+      instagram: asString(contact.instagram),
+      bookingUrl: asString(contact.bookingUrl),
     },
-    en: {
-      hero: {
-        title: typeof enHero.title === 'string' ? enHero.title : '',
-        subtitle: typeof enHero.subtitle === 'string' ? enHero.subtitle : '',
-      },
-      about: { text: typeof enAbout.text === 'string' ? enAbout.text : '' },
-    },
+    translations,
     settings: {
-      bilingual: settings.bilingual === true,
+      languages,
       leadForm: settings.leadForm === true,
     },
   }

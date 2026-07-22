@@ -2,19 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { locales, type Locale } from '@/lib/i18n/config'
-
-const LABELS: Record<Locale, string> = {
-  uk: 'UA',
-  en: 'EN',
-  pl: 'PL',
-  de: 'DE',
-  es: 'ES',
-  fr: 'FR',
-  it: 'IT',
-  ro: 'RO',
-  pt: 'PT',
-}
+import { locales, localeLabels, type Locale } from '@/lib/i18n/config'
 
 /**
  * Client-facing language switcher: keeps the current path and swaps the
@@ -40,7 +28,7 @@ export function LangPicker({ current }: { current: Locale }) {
             opacity: l === current ? 1 : 0.55,
           }}
         >
-          {LABELS[l]}
+          {localeLabels[l]}
         </Link>
       ))}
     </nav>

@@ -19,7 +19,10 @@ import {
   type SiteLabels,
 } from '@/components/site/SiteRenderer'
 import type { LeadFormLabels } from '@/components/site/LeadForm'
-import type { Locale } from '@/lib/i18n/config'
+import { locales, localeLabels, localeNames, type Locale } from '@/lib/i18n/config'
+
+/** Languages a site can be offered in besides the Ukrainian base. */
+const EXTRA_LOCALES = locales.filter((l): l is Locale => l !== 'uk')
 
 export interface EditorLabels {
   publish: string
@@ -57,14 +60,15 @@ export interface EditorLabels {
   contactBooking: string
   contactBookingHint: string
   optionsLegend: string
-  optBilingual: string
-  optBilingualHint: string
   optLeadForm: string
   optLeadFormHint: string
-  enLegend: string
-  enHeroTitle: string
-  enHeroSubtitle: string
-  enAboutPlaceholder: string
+  langLegend: string
+  langHint: string
+  translateLegend: string
+  translateHint: string
+  translateHeroTitle: string
+  translateHeroSubtitle: string
+  translateAbout: string
   save: string
   previewLabel: string
   delete: string
@@ -127,8 +131,14 @@ export function SiteEditor({
     }))
   )
   const [contact, setContact] = useState(content.contact)
-  const [bilingual, setBilingual] = useState(content.settings.bilingual)
+  const [languages, setLanguages] = useState<string[]>(content.settings.languages)
   const [leadForm, setLeadForm] = useState(content.settings.leadForm)
+
+  function toggleLanguage(loc: string, on: boolean) {
+    setLanguages((prev) =>
+      on ? [...prev.filter((l) => l !== loc), loc] : prev.filter((l) => l !== loc)
+    )
+  }
   const [uploading, setUploading] = useState(0)
   // Category new uploads are dropped into (photographers add a shoot at a time).
   const [uploadCategory, setUploadCategory] = useState('')
@@ -211,10 +221,10 @@ export function SiteEditor({
           .filter((pack) => pack.name),
       },
       contact,
-      en: content.en,
-      settings: { bilingual, leadForm },
+      translations: content.translations,
+      settings: { languages, leadForm },
     }),
-    [heroTitle, heroSubtitle, aboutText, packs, contact, content.en, bilingual, leadForm]
+    [heroTitle, heroSubtitle, aboutText, packs, contact, content.translations, languages, leadForm]
   )
 
   function setPack(index: number, patch: Partial<Pack>) {
@@ -495,18 +505,6 @@ export function SiteEditor({
             <label className="flex items-center gap-3 text-sm">
               <input
                 type="checkbox"
-                name="opt_bilingual"
-                checked={bilingual}
-                onChange={(event) => setBilingual(event.target.checked)}
-              />
-              {labels.optBilingual}
-            </label>
-            <p className="pl-7 text-xs text-muted">{labels.optBilingualHint}</p>
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="flex items-center gap-3 text-sm">
-              <input
-                type="checkbox"
                 name="opt_lead_form"
                 checked={leadForm}
                 onChange={(event) => setLeadForm(event.target.checked)}
@@ -517,29 +515,73 @@ export function SiteEditor({
           </div>
         </fieldset>
 
+        {/* ---- languages the site is offered in ---- */}
+        <fieldset className="flex flex-col gap-3 rounded border border-line p-5">
+          <legend className="px-2 text-sm text-muted">{labels.langLegend}</legend>
+          <p className="text-xs leading-relaxed text-muted">{labels.langHint}</p>
+          <div className="flex flex-wrap gap-x-4 gap-y-2">
+            <span className="flex items-center gap-2 text-sm text-muted">
+              <input type="checkbox" checked disabled />
+              {localeNames.uk}
+            </span>
+            {EXTRA_LOCALES.map((loc) => (
+              <label key={loc} className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  name={`lang_${loc}`}
+                  checked={languages.includes(loc)}
+                  onChange={(event) => toggleLanguage(loc, event.target.checked)}
+                />
+                {localeNames[loc]}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
+        {/* ---- per-language translations ---- */}
+        {/* Blocks stay mounted for every language (hidden when off) so toggling a
+            language never discards text already typed. */}
         <fieldset
-          className={`flex-col gap-3 rounded border border-line p-5 ${bilingual ? 'flex' : 'hidden'}`}
+          className={`flex-col gap-4 rounded border border-line p-5 ${
+            languages.length > 0 ? 'flex' : 'hidden'
+          }`}
         >
-          <legend className="px-2 text-sm text-muted">{labels.enLegend}</legend>
-          <input
-            name="en_hero_title"
-            defaultValue={content.en.hero.title}
-            placeholder={labels.enHeroTitle}
-            className={inputClass}
-          />
-          <input
-            name="en_hero_subtitle"
-            defaultValue={content.en.hero.subtitle}
-            placeholder={labels.enHeroSubtitle}
-            className={inputClass}
-          />
-          <textarea
-            name="en_about_text"
-            rows={5}
-            defaultValue={content.en.about.text}
-            placeholder={labels.enAboutPlaceholder}
-            className={inputClass}
-          />
+          <legend className="px-2 text-sm text-muted">{labels.translateLegend}</legend>
+          <p className="text-xs leading-relaxed text-muted">{labels.translateHint}</p>
+          {EXTRA_LOCALES.map((loc) => {
+            const block = content.translations[loc]
+            return (
+              <div
+                key={loc}
+                className={`flex-col gap-2 rounded border border-line p-3 ${
+                  languages.includes(loc) ? 'flex' : 'hidden'
+                }`}
+              >
+                <p className="text-xs font-bold uppercase tracking-wide text-muted">
+                  {localeNames[loc]} · {localeLabels[loc]}
+                </p>
+                <input
+                  name={`t_${loc}_hero_title`}
+                  defaultValue={block?.hero.title ?? ''}
+                  placeholder={labels.translateHeroTitle}
+                  className={inputClass}
+                />
+                <input
+                  name={`t_${loc}_hero_subtitle`}
+                  defaultValue={block?.hero.subtitle ?? ''}
+                  placeholder={labels.translateHeroSubtitle}
+                  className={inputClass}
+                />
+                <textarea
+                  name={`t_${loc}_about_text`}
+                  rows={4}
+                  defaultValue={block?.about.text ?? ''}
+                  placeholder={labels.translateAbout}
+                  className={inputClass}
+                />
+              </div>
+            )
+          })}
         </fieldset>
 
         <fieldset className="flex flex-col gap-4 rounded border border-line p-5">
@@ -630,7 +672,16 @@ export function SiteEditor({
               portfolio={visiblePortfolio}
               labels={siteLabels}
               langSwitch={
-                bilingual ? { current: locale === 'en' ? 'en' : 'uk', hrefUk: '#', hrefEn: '#' } : undefined
+                languages.length > 0
+                  ? {
+                      options: ['uk', ...languages].map((l) => ({
+                        locale: l,
+                        href: '#',
+                        label: localeLabels[l as Locale] ?? l.toUpperCase(),
+                        current: l === 'uk',
+                      })),
+                    }
+                  : undefined
               }
               leadForm={leadForm ? { handle: null, labels: leadFormLabels } : undefined}
             />

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getDictionary } from '@/lib/i18n'
-import { isLocale } from '@/lib/i18n/config'
+import { isLocale, localeLabels, type Locale } from '@/lib/i18n/config'
 import { jsonLdScript } from '@/lib/jsonld'
 import { localizedSiteContent, parseSiteContent } from '@/lib/site/content'
 import { isThemeId } from '@/lib/site/themes'
@@ -135,11 +135,16 @@ export default async function PublicSitePage({
           book: dict.publicSite.book,
         }}
         langSwitch={
-          rawContent.settings.bilingual
+          rawContent.settings.languages.length > 0
             ? {
-                current: locale === 'en' ? 'en' : 'uk',
-                hrefUk: `/uk/s/${params.handle}`,
-                hrefEn: `/en/s/${params.handle}`,
+                options: ['uk', ...rawContent.settings.languages]
+                  .filter((l): l is Locale => isLocale(l))
+                  .map((l) => ({
+                    locale: l,
+                    href: `/${l}/s/${params.handle}`,
+                    label: localeLabels[l],
+                    current: l === locale,
+                  })),
               }
             : undefined
         }

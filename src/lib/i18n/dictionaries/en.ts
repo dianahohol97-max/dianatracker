@@ -210,16 +210,18 @@ export const en: Dictionary = {
     portfolioCategoryEg: 'e.g. Weddings, Portraits, Family',
     portfolioUncategorized: 'Uncategorized',
     optionsLegend: 'Options',
-    optBilingual: 'Bilingual site (Ukrainian + English)',
-    optBilingualHint:
-      'A UA/EN switcher appears on the site. Fill in the English texts below — pricing and contacts are shared.',
     optLeadForm: 'Lead form',
     optLeadFormHint:
       'A "Leave a request" form appears in the contact block. Requests are collected at the bottom of this page.',
-    enLegend: 'English version',
-    enHeroTitle: 'Title in English',
-    enHeroSubtitle: 'Subtitle in English',
-    enAboutPlaceholder: 'About text in English',
+    langLegend: 'Site languages',
+    langHint:
+      'Choose the languages your site is shown in. Ukrainian is the base. A language switcher appears on the site so clients can pick the one they prefer.',
+    translateLegend: 'Translations',
+    translateHint:
+      'Fill in the texts for each chosen language. Empty fields fall back to the base (Ukrainian). Pricing and contacts are shared across languages.',
+    translateHeroTitle: 'Title in this language',
+    translateHeroSubtitle: 'Subtitle in this language',
+    translateAbout: 'About text in this language',
     leadsTitle: 'Site leads',
     leadsEmpty: 'Nothing yet. When someone fills in the form on your site, it shows up here.',
     save: 'Save site',
