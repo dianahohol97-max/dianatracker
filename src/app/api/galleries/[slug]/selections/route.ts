@@ -50,26 +50,17 @@ export async function POST(request: NextRequest, { params }: { params: { slug: s
     return NextResponse.json({ error: 'locked' }, { status: 403 })
   }
 
-  if (body.selected) {
-    const { error } = await supabase.from('selections').upsert(
-      {
-        gallery_id: gallery.id,
-        asset_id: body.assetId,
-        client_token: clientToken,
-        kind: body.kind,
-      },
-      { onConflict: 'asset_id,client_token,kind', ignoreDuplicates: true }
-    )
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  } else {
-    const { error } = await supabase
-      .from('selections')
-      .delete()
-      .eq('asset_id', body.assetId)
-      .eq('client_token', clientToken)
-      .eq('kind', body.kind)
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  }
+  // Writes go through a SECURITY DEFINER RPC scoped by the client token: the
+  // selections table is no longer directly writable by the anon key, so one
+  // visitor can't touch another's picks even by calling PostgREST directly.
+  const { error } = await supabase.rpc('set_selection', {
+    p_slug: params.slug,
+    p_asset: body.assetId,
+    p_kind: body.kind,
+    p_selected: body.selected,
+    p_token: clientToken,
+  })
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
   return NextResponse.json({ ok: true })
 }
