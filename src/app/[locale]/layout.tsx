@@ -33,7 +33,11 @@ export function generateMetadata({ params }: { params: { locale: string } }): Me
         ]
       : ['online client gallery', 'photographer website builder', 'photo session booking', 'Ukraine'],
     alternates: {
-      canonical: `/${locale}`,
+      // The marketing landing exists only in Ukrainian and English. The other
+      // client-facing locales render the English copy, so they canonicalize to
+      // /en — Google consolidates the signal instead of seeing duplicates.
+      // (Gallery/booking/site pages set their own canonical and override this.)
+      canonical: locale === 'uk' ? '/uk' : '/en',
       languages: { uk: '/uk', en: '/en', 'x-default': '/uk' },
     },
     openGraph: {
