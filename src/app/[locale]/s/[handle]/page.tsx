@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getDictionary } from '@/lib/i18n'
 import { isLocale } from '@/lib/i18n/config'
+import { jsonLdScript } from '@/lib/jsonld'
 import { localizedSiteContent, parseSiteContent } from '@/lib/site/content'
 import { isThemeId } from '@/lib/site/themes'
 import { getStorage } from '@/lib/storage'
@@ -117,7 +118,7 @@ export default async function PublicSitePage({
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(jsonLd) }}
       />
       <SiteRenderer
         theme={site.theme}

@@ -9,9 +9,15 @@ import type { Gallery } from './types'
  */
 
 function unlockSecret(): string {
-  // Falls back to a dev-only value so local setup works without every env
-  // var; production MUST set GALLERY_UNLOCK_SECRET (see .env.example).
-  return process.env.GALLERY_UNLOCK_SECRET ?? 'insecure-dev-secret'
+  const secret = process.env.GALLERY_UNLOCK_SECRET
+  if (secret) return secret
+  // Fail closed in production: a hardcoded fallback here would let anyone
+  // forge the HMAC unlock cookie for any gallery and bypass its password.
+  // Locally we allow a dev-only value so setup works without every env var.
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('GALLERY_UNLOCK_SECRET is required in production')
+  }
+  return 'insecure-dev-secret'
 }
 
 export function unlockCookieName(galleryId: string): string {
