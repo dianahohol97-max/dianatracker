@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { signOut } from '@/lib/actions/galleries'
+import { isAdminEmail } from '@/lib/admin'
 import { getDictionary } from '@/lib/i18n'
 import { isLocale } from '@/lib/i18n/config'
 import {
@@ -49,6 +50,10 @@ export default async function DashboardLayout({
     { href: `/${locale}/dashboard/billing`, label: dict.dashboard.billingLink },
     { href: `/${locale}/dashboard/settings`, label: dict.dashboard.settingsLink },
   ]
+  // Founder-only stats link (the page itself re-checks the allowlist).
+  if (isAdminEmail(user.email)) {
+    items.push({ href: `/${locale}/dashboard/stats`, label: dict.dashboard.statsLink })
+  }
 
   const planName =
     profile && isGalleryPlanId(profile.plan)
