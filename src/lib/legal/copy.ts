@@ -29,14 +29,14 @@ export interface LegalCopy {
 }
 
 const SUPPORT_EMAIL = '[email для звернень]'
-const ENTITY = '[ФОП / назва компанії]'
-const CODE = '[РНОКПП / ЄДРПОУ]'
-const UPDATED = '[дата оновлення]'
+const ENTITY = 'ФОП Гоголь Діана Іванівна'
+const CODE = '[РНОКПП]'
+const UPDATED = '23.07.2026'
 
 const uk: LegalCopy = {
   backToHome: '← На головну',
   reviewNote:
-    'Це робочий шаблон документа. Перед запуском замініть реквізити у квадратних дужках і узгодьте текст із юристом.',
+    'Перед запуском заповніть решту реквізитів у квадратних дужках (РНОКПП, адреса, email для звернень) і бажано узгодьте текст із юристом.',
   oferta: {
     title: 'Публічна оферта',
     updated: `Редакція від ${UPDATED}`,
@@ -105,7 +105,8 @@ const uk: LegalCopy = {
         heading: '9. Реквізити Виконавця',
         paragraphs: [
           `Найменування: ${ENTITY}`,
-          `Код: ${CODE}`,
+          `Група оподаткування: платник єдиного податку третьої групи`,
+          `РНОКПП: ${CODE}`,
           `Адреса: [адреса]`,
           `Електронна пошта: ${SUPPORT_EMAIL}`,
         ],
@@ -181,7 +182,7 @@ const uk: LegalCopy = {
 const en: LegalCopy = {
   backToHome: '← Home',
   reviewNote:
-    'This is a working template. Replace the bracketed details and have the text reviewed by a lawyer before launch.',
+    'Before launch, fill in the remaining bracketed details (tax ID, address, contact email) and ideally have the text reviewed by a lawyer.',
   oferta: {
     title: 'Public Offer (Terms)',
     updated: `Version of ${UPDATED}`,
@@ -244,7 +245,8 @@ const en: LegalCopy = {
         heading: '9. Provider details',
         paragraphs: [
           `Name: ${ENTITY}`,
-          `Code: ${CODE}`,
+          `Tax status: single-tax payer, third group`,
+          `Tax ID (РНОКПП): ${CODE}`,
           `Address: [address]`,
           `Email: ${SUPPORT_EMAIL}`,
         ],
