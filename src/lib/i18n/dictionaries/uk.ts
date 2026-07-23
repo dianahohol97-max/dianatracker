@@ -33,6 +33,8 @@ export const uk = {
     error: 'Не вдалося надіслати посилання. Перевірте адресу та спробуйте ще раз.',
     passwordError:
       'Не вдалося увійти. Перевірте пошту й пароль або скористайтеся лінком на пошту.',
+    signupError:
+      'Не вдалося зареєструватися. Можливо, ця пошта вже зайнята — спробуйте увійти або скористайтеся іншою.',
   },
   dashboard: {
     title: 'Мої галереї',
@@ -75,6 +77,15 @@ export const uk = {
     deleteGallery: 'Видалити галерею',
     deleteConfirm:
       'Галерею та всі фотографії буде видалено назавжди. Цю дію неможливо скасувати.',
+    settingsTitle: 'Пароль і термін дії',
+    settingsPasswordLabel: 'Пароль галереї',
+    settingsPasswordSet: 'Пароль встановлено — введіть новий, щоб змінити',
+    settingsPasswordNone: 'Без пароля — введіть, щоб захистити',
+    settingsPasswordHint: 'Залиште порожнім, щоб не змінювати поточний пароль.',
+    settingsPasswordRemove: 'Прибрати пароль (зробити галерею відкритою)',
+    settingsExpiryLabel: 'Діє до',
+    settingsExpiryHint: 'Після цієї дати галерея стане недоступною. Порожнє поле — без обмеження.',
+    settingsSave: 'Зберегти',
     noAssets:
       'У галереї поки немає фотографій. Завантажте перші, щоб побачити, як вона виглядатиме для клієнта.',
     statsDownloads: 'Завантажень',
@@ -283,7 +294,7 @@ export const uk = {
     autoRenewTitle: 'Авто-продовження',
     autoRenewNextCharge: 'наступне списання',
     autoRenewActiveUntil: 'діє до',
-    autoRenewPastDue: 'не вдалося списати оплату — онови підписку на сторінці тарифів',
+    autoRenewPastDue: 'не вдалося списати оплату — оновіть підписку на сторінці тарифів',
     autoRenewCancel: 'Скасувати',
     autoRenewCanceled: 'скасовано',
     autoRenewConfirm:
@@ -294,8 +305,6 @@ export const uk = {
     planBasic: 'Базовий',
     planPlus: 'Плюс',
     planPro: 'Максимальний',
-    planMax: 'Максимальний',
-    planMaxPlus: 'Максимальний+',
     sitePlanTrial: 'Пробний',
     sitePlanBasic: 'Базовий',
     sitePlanPlus: 'Плюс',
@@ -313,8 +322,6 @@ export const uk = {
     noteBasic: 'Знімає брендинг, додає ваше лого',
     notePlus: 'Відео, статистика і чайові',
     notePro: 'Пріоритетна підтримка',
-    noteMax: 'Для великих архівів',
-    noteMaxPlus: 'Студійний масштаб',
     storage: 'сховища',
     upgrade: 'Перейти на цей тариф',
     currentBadge: 'Поточний',
@@ -323,6 +330,7 @@ export const uk = {
     freePrice: 'Безкоштовно',
     notConfigured:
       'Оплати ще не підключені. Ми повідомимо, щойно оновлення тарифів стане доступним.',
+    checkoutError: 'Не вдалося перейти до оплати. Спробуйте ще раз за хвилину.',
   },
   publicGallery: {
     passwordTitle: 'Ця галерея захищена паролем',

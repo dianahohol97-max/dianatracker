@@ -37,3 +37,23 @@ export function getPayments(): PaymentProvider | null {
       throw new Error(`Unknown PAYMENT_PROVIDER: ${provider}`)
   }
 }
+
+/**
+ * Which env vars the SELECTED provider is still missing — so a 503 during setup
+ * names the real keys (e.g. LIQPAY_PUBLIC_KEY) instead of a generic hint.
+ * Returns [] when the provider is fully configured.
+ */
+export function missingPaymentEnv(): string[] {
+  const hasMono = !!process.env.MONOBANK_TOKEN
+  const provider = process.env.PAYMENT_PROVIDER ?? (hasMono ? 'monobank' : 'liqpay')
+  if (provider === 'monobank') {
+    return process.env.MONOBANK_TOKEN ? [] : ['MONOBANK_TOKEN']
+  }
+  if (provider === 'liqpay') {
+    return [
+      !process.env.LIQPAY_PUBLIC_KEY ? 'LIQPAY_PUBLIC_KEY' : null,
+      !process.env.LIQPAY_PRIVATE_KEY ? 'LIQPAY_PRIVATE_KEY' : null,
+    ].filter((v): v is string => v !== null)
+  }
+  return [`PAYMENT_PROVIDER (unknown value: ${provider})`]
+}

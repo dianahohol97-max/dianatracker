@@ -5,6 +5,8 @@ import { isLocale } from '@/lib/i18n/config'
 import {
   GALLERY_PLANS,
   SITE_PLANS,
+  effectiveGalleryPlan,
+  planStorageBytes,
   type GalleryPlan,
   type GalleryPlanId,
   type SitePlanId,
@@ -21,7 +23,8 @@ import type { Profile } from '@/lib/types'
 export const dynamic = 'force-dynamic'
 
 function formatGb(bytes: number): string {
-  return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`
+  const gb = bytes / (1024 * 1024 * 1024)
+  return gb >= 1 ? `${gb.toFixed(1)} ГБ` : `${Math.max(Math.round(bytes / (1024 * 1024)), 0)} МБ`
 }
 
 function galleryFeatureLines(plan: GalleryPlan, dict: Dictionary): string[] {
@@ -105,6 +108,7 @@ export default async function BillingPage({ params }: { params: { locale: string
     perYear: dict.billing.perYear,
     freePrice: dict.billing.freePrice,
     notConfigured: dict.billing.notConfigured,
+    checkoutError: dict.billing.checkoutError,
   }
 
   const subscriptions: SubscriptionView[] = (subRows ?? [])
@@ -135,6 +139,13 @@ export default async function BillingPage({ params }: { params: { locale: string
     ? siteNames[profile.site_plan]
     : profile.site_plan
 
+  // Show the limit that actually gates uploads — mirrors src/lib/uploads.ts, so
+  // an expired/downgraded account shows its real (free) quota, not a stale one.
+  const effectiveStorageLimit = Math.min(
+    profile.storage_limit_bytes,
+    planStorageBytes(effectiveGalleryPlan(profile.plan, profile.grace_until))
+  )
+
   return (
     <main className="mx-auto max-w-5xl px-6 py-16">
       <Link href={`/${locale}/dashboard`} className="text-sm text-muted hover:text-fg">
@@ -145,7 +156,7 @@ export default async function BillingPage({ params }: { params: { locale: string
       <p className="mt-4 text-sm text-muted">
         {dict.billing.currentPlan}: {currentGalleryName} · {dict.billing.currentSitePlan}:{' '}
         {currentSiteName} · {dict.dashboard.storageUsed}: {formatGb(profile.storage_used_bytes)} /{' '}
-        {formatGb(profile.storage_limit_bytes)}
+        {formatGb(effectiveStorageLimit)}
       </p>
       {profile.grace_until && (
         <p className="mt-2 text-sm text-accent">

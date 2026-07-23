@@ -195,7 +195,11 @@ export default function LoginPage() {
             </button>
             {status === 'error' && (
               <p className="text-sm text-accent">
-                {mode === 'magic' ? dict.auth.error : dict.auth.passwordError}
+                {mode === 'magic'
+                  ? dict.auth.error
+                  : mode === 'signup'
+                    ? dict.auth.signupError
+                    : dict.auth.passwordError}
               </p>
             )}
           </form>

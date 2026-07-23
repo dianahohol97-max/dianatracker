@@ -16,6 +16,7 @@ interface Labels {
   perYear: string
   freePrice: string
   notConfigured: string
+  checkoutError: string
 }
 
 /** Shared plan grid for both products with a month/year toggle. */
@@ -48,7 +49,12 @@ export function BillingPlans({
         setNotice(labels.notConfigured)
         return
       }
-      if (!response.ok) throw new Error(`checkout ${response.status}`)
+      if (!response.ok) {
+        // A real failure (bad request, provider outage, DB error) — don't
+        // mislead the user into thinking billing simply isn't set up.
+        setNotice(labels.checkoutError)
+        return
+      }
       const form = (await response.json()) as { url: string; fields: Record<string, string> }
 
       // No fields (monobank) → the checkout page is opened by plain redirect;
@@ -71,7 +77,8 @@ export function BillingPlans({
       document.body.appendChild(element)
       element.submit()
     } catch {
-      setNotice(labels.notConfigured)
+      // Network/JS failure before we got a response.
+      setNotice(labels.checkoutError)
     } finally {
       setBusyPlan(null)
     }

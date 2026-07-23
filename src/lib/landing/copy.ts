@@ -145,7 +145,7 @@ const uk: LandingCopy = {
         chips: ['Тиша', 'Опівніч', 'Плівка', 'Журнал', 'Архів'],
       },
       previewPhoto: 'Превʼю без втрат швидкості',
-      autoRelease: { label: 'Бронювання', text: 'Неоплачений слот звільняється сам через N годин' },
+      autoRelease: { label: 'Бронювання', text: 'Неоплачений слот звільняється сам за кілька годин' },
       video: {
         label: 'Великі відео',
         text: 'Завантаження частинами: обрив мережі на 95% коштує секунд, а не години',
@@ -324,7 +324,7 @@ const en: LandingCopy = {
         chips: ['Tysha', 'Opivnich', 'Plivka', 'Zhurnal', 'Arkhiv'],
       },
       previewPhoto: 'Previews with zero speed loss',
-      autoRelease: { label: 'Booking', text: 'An unpaid slot frees itself after N hours' },
+      autoRelease: { label: 'Booking', text: 'An unpaid slot frees itself after a few hours' },
       video: {
         label: 'Large videos',
         text: 'Chunked uploads: a network drop at 95% costs seconds, not hours',

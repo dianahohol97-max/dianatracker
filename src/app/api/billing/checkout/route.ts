@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { getPayments } from '@/lib/payments'
+import { getPayments, missingPaymentEnv } from '@/lib/payments'
 import {
   BUNDLE_SITE_DISCOUNT,
   GALLERY_PLANS,
@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
   const admin = createSupabaseAdminClient()
   if (!payments || !admin) {
     const missing = [
-      !payments ? 'payment_provider (MONOBANK_TOKEN / PAYMENT_PROVIDER)' : null,
+      ...(!payments ? missingPaymentEnv() : []),
       !admin ? 'SUPABASE_SERVICE_ROLE_KEY' : null,
     ].filter(Boolean)
     console.error('billing checkout: not configured, missing:', missing.join(', '))
