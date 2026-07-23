@@ -114,6 +114,13 @@ export function getContentBySlug(
   );
 }
 
+/** All content for one destination in a locale (guides, data pages, etc.). */
+export function getContentByDestination(locale: Locale, destination: string): ContentDoc[] {
+  return getAllContent().filter(
+    (d) => d.frontmatter.locale === locale && d.frontmatter.destination === destination,
+  );
+}
+
 /**
  * All locale variants sharing a `translationKey`, keyed by locale. Powers
  * hreflang alternates and the language switcher: given the current doc, we can

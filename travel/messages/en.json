@@ -74,6 +74,47 @@
     "updated": "Updated",
     "readingType": "Guide"
   },
+  "data": {
+    "title": "Travel data",
+    "description": "Verified, regularly updated numbers: trip costs, transport, seasonality and opening hours — every figure with a source and a check date.",
+    "updated": "Updated",
+    "readingType": "Data"
+  },
+  "destinations": {
+    "title": "Destinations",
+    "description": "Practical hubs for the world's most popular destinations — guides, verified data, tours and car hire in one place.",
+    "guidesHeading": "Guides",
+    "dataHeading": "Travel data",
+    "empty": "New material for this destination is on the way."
+  },
+  "about": {
+    "title": "About Tripify",
+    "intro": "Tripify publishes travel guides and data built from research and primary sources — not from invented personal trips. Our aim is that every number you read is traceable to an official source and a date it was checked.",
+    "methodologyHeading": "How we research",
+    "methodologyBody": "Each guide starts from official sources: tourist boards, transport operators, museums and government visa portals. We record prices, opening hours, route numbers and seasonal windows, and we store the source and check date alongside every factual block.",
+    "sourcesHeading": "Sources and checking",
+    "sourcesBody": "Every page lists its sources with the date each was verified, and shows a \"data checked\" badge. When a price is uncertain we publish a range and label it orientative rather than presenting a guess as fact.",
+    "authorshipHeading": "Who writes this",
+    "authorshipBody": "Tripify is written and reviewed by an editorial team that researches and verifies data. We do not fabricate first-person travel experiences, and we do not use AI-generated photographs of real places."
+  },
+  "disclosure": {
+    "title": "Affiliate disclosure",
+    "body": "Some links on Tripify are affiliate links. If you book or buy through them we may earn a commission, at no extra cost to you. This never changes the prices you pay, and it does not influence which places, tickets or operators we recommend — those choices follow our research and sources."
+  },
+  "tools": {
+    "title": "Travel tools",
+    "description": "Free calculators and planners to price and shape your trip — no sign-up required.",
+    "comingSoon": "Our budget calculator, trip planner and car-rental comparison are launching soon."
+  },
+  "contact": {
+    "title": "Contact",
+    "body": "Questions, corrections and partnership enquiries are welcome. We especially value corrections: if a price or detail looks out of date, tell us and we will re-check it against the source.",
+    "email": "hello@tripify.example"
+  },
+  "privacy": {
+    "title": "Privacy policy",
+    "body": "We collect the minimum needed to run the site: your email address only if you subscribe, and anonymous, aggregated analytics. We never sell personal data, and affiliate clicks are logged without personal identifiers."
+  },
   "notFound": {
     "title": "Page not found",
     "description": "The page you are looking for does not exist or has moved.",

@@ -74,6 +74,47 @@
     "updated": "Zaktualizowano",
     "readingType": "Przewodnik"
   },
+  "data": {
+    "title": "Dane podróżne",
+    "description": "Zweryfikowane, regularnie aktualizowane liczby: koszty podróży, transport, sezonowość i godziny otwarcia — każda wartość ze źródłem i datą sprawdzenia.",
+    "updated": "Zaktualizowano",
+    "readingType": "Dane"
+  },
+  "destinations": {
+    "title": "Kierunki",
+    "description": "Praktyczne centra dla najpopularniejszych kierunków świata — przewodniki, zweryfikowane dane, wycieczki i wynajem aut w jednym miejscu.",
+    "guidesHeading": "Przewodniki",
+    "dataHeading": "Dane podróżne",
+    "empty": "Nowe materiały dla tego kierunku są w przygotowaniu."
+  },
+  "about": {
+    "title": "O Tripify",
+    "intro": "Tripify publikuje przewodniki i dane oparte na badaniach i źródłach pierwotnych — a nie na zmyślonych podróżach. Naszym celem jest, aby każda liczba dała się prześledzić do oficjalnego źródła i daty sprawdzenia.",
+    "methodologyHeading": "Jak prowadzimy research",
+    "methodologyBody": "Każdy przewodnik zaczyna się od źródeł oficjalnych: biur turystycznych, przewoźników, muzeów i rządowych portali wizowych. Zapisujemy ceny, godziny otwarcia, numery linii i okna sezonowe, a przy każdym bloku faktów przechowujemy źródło i datę sprawdzenia.",
+    "sourcesHeading": "Źródła i weryfikacja",
+    "sourcesBody": "Każda strona wymienia swoje źródła z datą weryfikacji i pokazuje odznakę \"dane zweryfikowano\". Gdy cena jest niepewna, publikujemy przedział i oznaczamy go orientacyjnie, zamiast przedstawiać szacunek jako fakt.",
+    "authorshipHeading": "Kto to pisze",
+    "authorshipBody": "Tripify pisze i weryfikuje zespół redakcyjny, który bada i sprawdza dane. Nie zmyślamy doświadczeń podróżniczych z pierwszej ręki i nie używamy zdjęć prawdziwych miejsc generowanych przez AI."
+  },
+  "disclosure": {
+    "title": "Informacja o afiliacji",
+    "body": "Niektóre linki na Tripify są linkami afiliacyjnymi. Jeśli za ich pośrednictwem rezerwujesz lub kupujesz, możemy otrzymać prowizję — bez dodatkowych kosztów dla Ciebie. Nie zmienia to nigdy cen, które płacisz, ani nie wpływa na to, które miejsca, bilety czy firmy polecamy; te wybory wynikają z naszego researchu i źródeł."
+  },
+  "tools": {
+    "title": "Narzędzia podróżne",
+    "description": "Darmowe kalkulatory i planery, aby wycenić i ułożyć podróż — bez rejestracji.",
+    "comingSoon": "Nasz kalkulator budżetu, planer trasy i porównywarka wynajmu aut ruszają wkrótce."
+  },
+  "contact": {
+    "title": "Kontakt",
+    "body": "Pytania, poprawki i zapytania o współpracę są mile widziane. Szczególnie cenimy poprawki: jeśli cena lub szczegół wygląda na nieaktualny, napisz, a sprawdzimy to ponownie ze źródłem.",
+    "email": "hello@tripify.example"
+  },
+  "privacy": {
+    "title": "Polityka prywatności",
+    "body": "Zbieramy tylko to, co niezbędne do działania serwisu: Twój adres e-mail wyłącznie przy zapisie oraz anonimowe, zagregowane statystyki. Nie sprzedajemy danych osobowych, a kliknięcia afiliacyjne rejestrujemy bez identyfikatorów osobowych."
+  },
   "notFound": {
     "title": "Nie znaleziono strony",
     "description": "Szukana strona nie istnieje lub została przeniesiona.",

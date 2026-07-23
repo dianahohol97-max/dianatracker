@@ -65,6 +65,16 @@ export const frontmatterSchema = z.object({
   type: z.enum(contentTypes),
   country: z.string().min(1),
   region: z.string().min(1),
+  /**
+   * Stable destination key (e.g. "rome") linking this doc to a destination hub.
+   * Locale-independent — unlike `country`, which is localised — so a hub can
+   * aggregate all its guides/data across locales. Optional: site-wide pages
+   * (comparisons spanning cities) may omit it.
+   */
+  destination: z
+    .string()
+    .regex(/^[a-z0-9-]+$/, 'destination must be a lowercase slug')
+    .optional(),
   publishedAt: isoDate,
   updatedAt: isoDate,
   /** When the facts on the page were last verified against sources. */

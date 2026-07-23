@@ -74,6 +74,47 @@
     "updated": "Aktualisiert",
     "readingType": "Reiseführer"
   },
+  "data": {
+    "title": "Reisedaten",
+    "description": "Geprüfte, regelmäßig aktualisierte Zahlen: Reisekosten, Transport, Saisonzeiten und Öffnungszeiten — jede Angabe mit Quelle und Prüfdatum.",
+    "updated": "Aktualisiert",
+    "readingType": "Daten"
+  },
+  "destinations": {
+    "title": "Reiseziele",
+    "description": "Praktische Hubs für die beliebtesten Reiseziele der Welt — Reiseführer, geprüfte Daten, Touren und Mietwagen an einem Ort.",
+    "guidesHeading": "Reiseführer",
+    "dataHeading": "Reisedaten",
+    "empty": "Neues Material für dieses Reiseziel ist in Arbeit."
+  },
+  "about": {
+    "title": "Über Tripify",
+    "intro": "Tripify veröffentlicht Reiseführer und Daten auf Basis von Recherche und Primärquellen — nicht auf Basis erfundener Reisen. Unser Ziel ist, dass jede Zahl auf eine offizielle Quelle und ein Prüfdatum zurückführbar ist.",
+    "methodologyHeading": "Wie wir recherchieren",
+    "methodologyBody": "Jeder Reiseführer beginnt bei offiziellen Quellen: Tourismusbüros, Verkehrsbetriebe, Museen und staatliche Visa-Portale. Wir erfassen Preise, Öffnungszeiten, Liniennummern und Saisonfenster und speichern Quelle und Prüfdatum zu jedem faktischen Block.",
+    "sourcesHeading": "Quellen und Prüfung",
+    "sourcesBody": "Jede Seite nennt ihre Quellen mit dem jeweiligen Prüfdatum und zeigt ein Abzeichen \"Daten geprüft\". Ist ein Preis unsicher, veröffentlichen wir eine Spanne und kennzeichnen sie als orientativ, statt eine Schätzung als Fakt darzustellen.",
+    "authorshipHeading": "Wer das schreibt",
+    "authorshipBody": "Tripify wird von einem Redaktionsteam geschrieben und geprüft, das Daten recherchiert und verifiziert. Wir erfinden keine Reiseerlebnisse aus erster Hand und verwenden keine KI-generierten Fotos realer Orte."
+  },
+  "disclosure": {
+    "title": "Affiliate-Hinweis",
+    "body": "Einige Links auf Tripify sind Affiliate-Links. Wenn du darüber buchst oder kaufst, erhalten wir ggf. eine Provision — ohne Mehrkosten für dich. Das ändert nie deine Preise und beeinflusst nicht, welche Orte, Tickets oder Anbieter wir empfehlen; diese Entscheidungen folgen unserer Recherche und unseren Quellen."
+  },
+  "tools": {
+    "title": "Reise-Tools",
+    "description": "Kostenlose Rechner und Planer, um deine Reise zu kalkulieren und zu gestalten — ohne Anmeldung.",
+    "comingSoon": "Unser Budgetrechner, der Reiseplaner und der Mietwagenvergleich starten in Kürze."
+  },
+  "contact": {
+    "title": "Kontakt",
+    "body": "Fragen, Korrekturen und Partneranfragen sind willkommen. Korrekturen schätzen wir besonders: Wenn ein Preis oder Detail veraltet wirkt, sag uns Bescheid, und wir prüfen es erneut gegen die Quelle.",
+    "email": "hello@tripify.example"
+  },
+  "privacy": {
+    "title": "Datenschutz",
+    "body": "Wir erheben nur das Nötigste für den Betrieb der Seite: deine E-Mail-Adresse nur bei einem Abo sowie anonyme, aggregierte Analysen. Wir verkaufen keine personenbezogenen Daten, und Affiliate-Klicks werden ohne persönliche Kennungen protokolliert."
+  },
   "notFound": {
     "title": "Seite nicht gefunden",
     "description": "Die gesuchte Seite existiert nicht oder wurde verschoben.",
