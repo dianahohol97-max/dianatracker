@@ -1,0 +1,61 @@
+{
+  "site": {
+    "name": "Voyantic",
+    "tagline": "Recherchierte Reiseführer, geprüfte Daten und Planungstools für die beliebtesten Reiseziele der Welt."
+  },
+  "nav": {
+    "destinations": "Reiseziele",
+    "guides": "Reiseführer",
+    "data": "Reisedaten",
+    "tools": "Tools",
+    "about": "Über uns"
+  },
+  "home": {
+    "heroTitle": "Plane bessere Reisen mit geprüften Fakten statt Fülltext.",
+    "heroSubtitle": "Ausführliche Reiseführer aus Primärquellen, regelmäßig geprüfte Reisedaten und Rechner, die keine KI-Antwort ersetzen kann.",
+    "topDestinations": "Top-Reiseziele",
+    "latestGuides": "Neueste Reiseführer",
+    "exploreTools": "Planungstools",
+    "seeAll": "Alle ansehen"
+  },
+  "footer": {
+    "rights": "Alle Rechte vorbehalten.",
+    "disclosureShort": "Einige Links auf dieser Seite sind Affiliate-Links. Wir erhalten ggf. eine Provision — ohne Mehrkosten für dich.",
+    "sections": {
+      "explore": "Entdecken",
+      "company": "Unternehmen",
+      "legal": "Rechtliches"
+    },
+    "links": {
+      "about": "Über uns & Methodik",
+      "contact": "Kontakt",
+      "affiliateDisclosure": "Affiliate-Hinweis",
+      "privacy": "Datenschutz"
+    }
+  },
+  "language": {
+    "switch": "Sprache",
+    "label": "Sprache wählen",
+    "bannerText": "Diese Seite ist auch in deiner Sprache verfügbar.",
+    "bannerAccept": "Wechseln",
+    "bannerDismiss": "Schließen"
+  },
+  "newsletter": {
+    "title": "Eine nützliche Reiseidee pro Woche",
+    "subtitle": "Geprüfte Reiseführer und Daten — kein Spam, jederzeit abbestellbar.",
+    "placeholder": "Deine E-Mail-Adresse",
+    "submit": "Abonnieren",
+    "consent": "Mit dem Abonnieren stimmst du unserer Datenschutzerklärung zu."
+  },
+  "common": {
+    "readMore": "Weiterlesen",
+    "dataChecked": "Daten geprüft",
+    "sources": "Quellen",
+    "loading": "Wird geladen…"
+  },
+  "notFound": {
+    "title": "Seite nicht gefunden",
+    "description": "Die gesuchte Seite existiert nicht oder wurde verschoben.",
+    "home": "Zurück zur Startseite"
+  }
+}

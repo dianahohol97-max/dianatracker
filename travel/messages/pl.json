@@ -1,0 +1,61 @@
+{
+  "site": {
+    "name": "Voyantic",
+    "tagline": "Rzetelne przewodniki, zweryfikowane dane i narzędzia do planowania podróży po najpopularniejszych kierunkach świata."
+  },
+  "nav": {
+    "destinations": "Kierunki",
+    "guides": "Przewodniki",
+    "data": "Dane podróżne",
+    "tools": "Narzędzia",
+    "about": "O nas"
+  },
+  "home": {
+    "heroTitle": "Planuj lepsze podróże w oparciu o sprawdzone fakty, nie ogólniki.",
+    "heroSubtitle": "Szczegółowe przewodniki oparte na źródłach pierwotnych, regularnie weryfikowane dane oraz kalkulatory, których nie zastąpi odpowiedź AI.",
+    "topDestinations": "Popularne kierunki",
+    "latestGuides": "Najnowsze przewodniki",
+    "exploreTools": "Narzędzia planowania",
+    "seeAll": "Zobacz wszystkie"
+  },
+  "footer": {
+    "rights": "Wszelkie prawa zastrzeżone.",
+    "disclosureShort": "Niektóre linki na tej stronie są linkami afiliacyjnymi. Możemy otrzymać prowizję bez dodatkowych kosztów dla Ciebie.",
+    "sections": {
+      "explore": "Odkrywaj",
+      "company": "Firma",
+      "legal": "Informacje prawne"
+    },
+    "links": {
+      "about": "O nas i metodyka",
+      "contact": "Kontakt",
+      "affiliateDisclosure": "Informacja o afiliacji",
+      "privacy": "Polityka prywatności"
+    }
+  },
+  "language": {
+    "switch": "Język",
+    "label": "Wybierz język",
+    "bannerText": "Ta strona jest również dostępna w Twoim języku.",
+    "bannerAccept": "Przełącz",
+    "bannerDismiss": "Zamknij"
+  },
+  "newsletter": {
+    "title": "Jeden przydatny pomysł na podróż w tygodniu",
+    "subtitle": "Zweryfikowane przewodniki i dane — bez spamu, wypisz się w każdej chwili.",
+    "placeholder": "Twój adres e-mail",
+    "submit": "Zapisz się",
+    "consent": "Zapisując się, akceptujesz naszą politykę prywatności."
+  },
+  "common": {
+    "readMore": "Czytaj dalej",
+    "dataChecked": "Dane zweryfikowano",
+    "sources": "Źródła",
+    "loading": "Ładowanie…"
+  },
+  "notFound": {
+    "title": "Nie znaleziono strony",
+    "description": "Szukana strona nie istnieje lub została przeniesiona.",
+    "home": "Powrót do strony głównej"
+  }
+}

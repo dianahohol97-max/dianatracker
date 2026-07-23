@@ -1,0 +1,61 @@
+{
+  "site": {
+    "name": "Voyantic",
+    "tagline": "Researched travel guides, verified data, and planning tools for the world's most popular destinations."
+  },
+  "nav": {
+    "destinations": "Destinations",
+    "guides": "Guides",
+    "data": "Travel data",
+    "tools": "Tools",
+    "about": "About"
+  },
+  "home": {
+    "heroTitle": "Plan smarter trips with verified facts, not filler.",
+    "heroSubtitle": "Deep destination guides built from primary sources, regularly checked travel data, and calculators the AI answers can't replace.",
+    "topDestinations": "Top destinations",
+    "latestGuides": "Latest guides",
+    "exploreTools": "Planning tools",
+    "seeAll": "See all"
+  },
+  "footer": {
+    "rights": "All rights reserved.",
+    "disclosureShort": "Some links on this site are affiliate links. We may earn a commission at no extra cost to you.",
+    "sections": {
+      "explore": "Explore",
+      "company": "Company",
+      "legal": "Legal"
+    },
+    "links": {
+      "about": "About & methodology",
+      "contact": "Contact",
+      "affiliateDisclosure": "Affiliate disclosure",
+      "privacy": "Privacy policy"
+    }
+  },
+  "language": {
+    "switch": "Language",
+    "label": "Choose language",
+    "bannerText": "This page is also available in your language.",
+    "bannerAccept": "Switch",
+    "bannerDismiss": "Dismiss"
+  },
+  "newsletter": {
+    "title": "Get one useful trip idea a week",
+    "subtitle": "Verified guides and data — no spam, unsubscribe anytime.",
+    "placeholder": "Your email address",
+    "submit": "Subscribe",
+    "consent": "By subscribing you agree to our privacy policy."
+  },
+  "common": {
+    "readMore": "Read more",
+    "dataChecked": "Data checked",
+    "sources": "Sources",
+    "loading": "Loading…"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "The page you are looking for does not exist or has moved.",
+    "home": "Back to home"
+  }
+}
