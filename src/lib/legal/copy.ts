@@ -36,7 +36,7 @@ const UPDATED = '23.07.2026'
 const uk: LegalCopy = {
   backToHome: '← На головну',
   reviewNote:
-    'Перед запуском заповніть решту реквізитів у квадратних дужках (РНОКПП, адреса, email для звернень) і бажано узгодьте текст із юристом.',
+    'Перед запуском заповніть РНОКПП і email для звернень (у квадратних дужках) і бажано узгодьте текст із юристом.',
   oferta: {
     title: 'Публічна оферта',
     updated: `Редакція від ${UPDATED}`,
@@ -106,8 +106,9 @@ const uk: LegalCopy = {
         paragraphs: [
           `Найменування: ${ENTITY}`,
           `Група оподаткування: платник єдиного податку третьої групи`,
+          `Дата державної реєстрації: 04.09.2023`,
           `РНОКПП: ${CODE}`,
-          `Адреса: [адреса]`,
+          `Місцезнаходження: Україна, м. Тернопіль (повна адреса — за запитом)`,
           `Електронна пошта: ${SUPPORT_EMAIL}`,
         ],
       },
@@ -182,7 +183,7 @@ const uk: LegalCopy = {
 const en: LegalCopy = {
   backToHome: '← Home',
   reviewNote:
-    'Before launch, fill in the remaining bracketed details (tax ID, address, contact email) and ideally have the text reviewed by a lawyer.',
+    'Before launch, fill in the tax ID (РНОКПП) and contact email (in brackets) and ideally have the text reviewed by a lawyer.',
   oferta: {
     title: 'Public Offer (Terms)',
     updated: `Version of ${UPDATED}`,
@@ -246,8 +247,9 @@ const en: LegalCopy = {
         paragraphs: [
           `Name: ${ENTITY}`,
           `Tax status: single-tax payer, third group`,
+          `Registration date: 04.09.2023`,
           `Tax ID (РНОКПП): ${CODE}`,
-          `Address: [address]`,
+          `Location: Ukraine, Ternopil (full address on request)`,
           `Email: ${SUPPORT_EMAIL}`,
         ],
       },
