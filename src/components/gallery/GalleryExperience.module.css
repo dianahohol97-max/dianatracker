@@ -94,6 +94,13 @@
   border-radius: 10px; overflow: hidden; cursor: zoom-in;
 }
 .shotMedia { display: block; width: 100%; height: auto; }
+.playBadge {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: 54px; height: 54px; border-radius: 50%;
+  display: grid; place-items: center; pointer-events: none;
+  background: color-mix(in srgb, #000 45%, transparent);
+  color: #fff; font-size: 18px; padding-left: 3px;
+}
 .roundBtn {
   position: absolute; top: 10px; width: 36px; height: 36px;
   border: none; border-radius: 50%; cursor: pointer;

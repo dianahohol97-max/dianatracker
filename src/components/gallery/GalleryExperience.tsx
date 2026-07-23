@@ -13,6 +13,8 @@ export interface GalleryItem {
   width: number | null
   height: number | null
   previewUrl: string
+  /** Video still frame for the grid tile; null for photos or older videos. */
+  posterUrl?: string | null
   downloadHref: string
 }
 
@@ -296,8 +298,16 @@ export function GalleryExperience({
                 height={item.height ?? undefined}
                 className={s.shotMedia}
               />
+            ) : item.posterUrl ? (
+              // Video with a poster: show the still (never streams the original)
+              // with a play badge; the real video opens in the lightbox.
+              <>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={item.posterUrl} alt="" loading="lazy" className={s.shotMedia} />
+                <span className={s.playBadge}>▶</span>
+              </>
             ) : (
-              <video src={item.previewUrl} className={s.shotMedia} muted playsInline />
+              <video src={item.previewUrl} className={s.shotMedia} muted playsInline preload="metadata" />
             )}
             <a
               href={item.downloadHref}
@@ -358,7 +368,14 @@ export function GalleryExperience({
             // eslint-disable-next-line @next/next/no-img-element
             <img src={current.previewUrl} alt="" className={s.lbMedia} />
           ) : (
-            <video src={current.previewUrl} className={s.lbMedia} controls autoPlay playsInline />
+            <video
+              src={current.previewUrl}
+              poster={current.posterUrl ?? undefined}
+              className={s.lbMedia}
+              controls
+              autoPlay
+              playsInline
+            />
           )}
           <button type="button" className={s.lbNext} onClick={() => show((lightbox ?? 0) + 1)}>
             →

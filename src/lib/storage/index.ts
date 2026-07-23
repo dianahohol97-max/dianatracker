@@ -53,7 +53,9 @@ export function originalKey(ownerId: string, galleryId: string, fileName: string
   return `${galleryPrefix(ownerId, galleryId)}o/${crypto.randomUUID()}-${safeName}`
 }
 
-export const VARIANT_NAMES = ['preview', 'thumb'] as const
+// 'poster' is a still frame for a video, shown in the grid so the tile never
+// pulls the full original just to render.
+export const VARIANT_NAMES = ['preview', 'thumb', 'poster'] as const
 export type VariantName = (typeof VARIANT_NAMES)[number]
 
 export function isVariantName(value: string): value is VariantName {

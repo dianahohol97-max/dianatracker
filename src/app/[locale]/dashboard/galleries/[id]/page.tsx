@@ -101,7 +101,7 @@ export default async function ManageGalleryPage({
     (assets ?? []).map(async (asset) => ({
       asset,
       url: await storage.getSignedReadUrl(
-        asset.variants.thumb ?? asset.variants.preview ?? asset.r2_key,
+        asset.variants.poster ?? asset.variants.thumb ?? asset.variants.preview ?? asset.r2_key,
         { expiresInSeconds: 60 * 60 }
       ),
     }))
@@ -263,7 +263,8 @@ export default async function ManageGalleryPage({
                   key={asset.id}
                   className="group relative aspect-square overflow-hidden bg-line"
                 >
-                  {asset.kind === 'photo' ? (
+                  {asset.kind === 'photo' || asset.variants.poster ? (
+                    // Photo, or a video's poster still — never streams the original.
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={url}
@@ -272,7 +273,7 @@ export default async function ManageGalleryPage({
                       className="h-full w-full object-cover"
                     />
                   ) : (
-                    <video src={url} className="h-full w-full object-cover" muted />
+                    <video src={url} className="h-full w-full object-cover" muted preload="metadata" />
                   )}
                   {favoritedBy > 0 && (
                     <span className="absolute right-2 top-2 bg-bg/90 px-2 py-0.5 text-xs text-accent">

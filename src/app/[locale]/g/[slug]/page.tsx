@@ -155,6 +155,10 @@ export default async function PublicGalleryPage({
       previewUrl: await storage.getSignedReadUrl(asset.variants.preview ?? asset.r2_key, {
         expiresInSeconds: 60 * 60,
       }),
+      // For videos, a still frame so the grid never streams the original.
+      posterUrl: asset.variants.poster
+        ? await storage.getSignedReadUrl(asset.variants.poster, { expiresInSeconds: 60 * 60 })
+        : null,
       downloadHref: `/api/assets/${asset.id}/download`,
     }))
   )
