@@ -40,7 +40,7 @@ export async function POST(request: NextRequest, { params }: { params: { slug: s
   const supabase = createSupabaseServerClient()
   const { data: gallery } = await supabase
     .from('galleries')
-    .select('id, password_hash')
+    .select('id, has_password')
     .eq('slug', params.slug)
     .single()
   if (!gallery) {

@@ -37,11 +37,12 @@ export default async function PublicGalleryPage({
 
   const supabase = createSupabaseServerClient()
 
-  // Explicit column list — password_hash must never reach the page props.
+  // has_password (a safe boolean) — the scrypt hash itself is not selectable by
+  // the anon key at all (revoked in migration 0020), so it can never leak here.
   const { data: gallery } = await supabase
     .from('galleries')
     .select(
-      'id, slug, title, description, event_date, password_hash, is_published, cover_asset_id, theme'
+      'id, slug, title, description, event_date, has_password, is_published, cover_asset_id, theme'
     )
     .eq('slug', params.slug)
     .single<{
@@ -50,7 +51,7 @@ export default async function PublicGalleryPage({
       title: string
       description: string | null
       event_date: string | null
-      password_hash: string | null
+      has_password: boolean
       is_published: boolean
       cover_asset_id: string | null
       theme: string | null

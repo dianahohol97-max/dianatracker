@@ -29,7 +29,9 @@ export default async function DashboardPage({ params }: { params: { locale: stri
   const [{ data: galleries }, { data: planRow }] = await Promise.all([
     supabase
       .from('galleries')
-      .select('*')
+      .select(
+        'id, owner_id, slug, title, description, event_date, cover_asset_id, has_password, expires_at, is_published, view_count, created_at, updated_at, theme'
+      )
       .order('created_at', { ascending: false })
       .returns<Gallery[]>(),
     supabase

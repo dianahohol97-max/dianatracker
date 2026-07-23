@@ -1,15 +1,16 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { unlockCookieName, unlockCookieValue } from '@/lib/gallery-access'
 import { verifyPassword } from '@/lib/password'
-import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { createSupabaseAdminClient } from '@/lib/supabase/admin'
 
 export const runtime = 'nodejs'
 
 /**
  * Password gate for public galleries. On a correct password the response sets
  * an httpOnly HMAC cookie and redirects back to the gallery page.
- * Note: password_hash is readable here because the request runs server-side;
- * public pages never select that column into client-visible props.
+ * The scrypt hash is no longer selectable by the anon/authenticated key (it is
+ * revoked at the column level), so it is read here via the service-role client
+ * — the only place that ever touches the hash, and always server-side.
  */
 export async function POST(request: NextRequest, { params }: { params: { slug: string } }) {
   const formData = await request.formData()
@@ -17,8 +18,13 @@ export async function POST(request: NextRequest, { params }: { params: { slug: s
   const locale = String(formData.get('locale') ?? 'uk')
   const galleryUrl = new URL(`/${locale}/g/${params.slug}`, request.url)
 
-  const supabase = createSupabaseServerClient()
-  const { data: gallery } = await supabase
+  const admin = createSupabaseAdminClient()
+  if (!admin) {
+    // Fail closed: without the service role we cannot verify the password.
+    galleryUrl.searchParams.set('error', 'password')
+    return NextResponse.redirect(galleryUrl, { status: 303 })
+  }
+  const { data: gallery } = await admin
     .from('galleries')
     .select('id, password_hash')
     .eq('slug', params.slug)
