@@ -5,6 +5,7 @@ import {
   setGalleryCover,
   setGalleryPublished,
   setGalleryTheme,
+  updateGallerySettings,
 } from '@/lib/actions/galleries'
 import { getDictionary } from '@/lib/i18n'
 import { isLocale } from '@/lib/i18n/config'
@@ -110,6 +111,9 @@ export default async function ManageGalleryPage({
   const publishAction = setGalleryPublished.bind(null, locale, gallery.id, !gallery.is_published)
   const deleteAction = deleteGallery.bind(null, locale, gallery.id)
   const themeAction = setGalleryTheme.bind(null, locale, gallery.id)
+  const settingsAction = updateGallerySettings.bind(null, locale, gallery.id)
+  const hasPassword = !!gallery.password_hash
+  const expiryDefault = gallery.expires_at ? gallery.expires_at.slice(0, 10) : ''
 
   const themeOptions: { value: string; label: string }[] = [
     { value: '', label: dict.galleryManage.styleInherit },
@@ -183,6 +187,55 @@ export default async function ManageGalleryPage({
           }}
         />
       </header>
+
+      <section className="mt-12">
+        <h2 className="font-display text-2xl">{dict.galleryManage.settingsTitle}</h2>
+        <form action={settingsAction} className="mt-6 flex max-w-md flex-col gap-5">
+          <div className="flex flex-col gap-1">
+            <label className="text-sm text-muted" htmlFor="g-password">
+              {dict.galleryManage.settingsPasswordLabel}
+            </label>
+            <input
+              id="g-password"
+              name="password"
+              type="password"
+              autoComplete="new-password"
+              placeholder={
+                hasPassword
+                  ? dict.galleryManage.settingsPasswordSet
+                  : dict.galleryManage.settingsPasswordNone
+              }
+              className="border border-line bg-transparent px-3 py-2 text-sm outline-none focus:border-fg"
+            />
+            <p className="text-xs text-muted">{dict.galleryManage.settingsPasswordHint}</p>
+            {hasPassword && (
+              <label className="mt-1 flex items-center gap-2 text-sm">
+                <input type="checkbox" name="remove_password" />
+                {dict.galleryManage.settingsPasswordRemove}
+              </label>
+            )}
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-sm text-muted" htmlFor="g-expires">
+              {dict.galleryManage.settingsExpiryLabel}
+            </label>
+            <input
+              id="g-expires"
+              name="expires_at"
+              type="date"
+              defaultValue={expiryDefault}
+              className="border border-line bg-transparent px-3 py-2 text-sm outline-none focus:border-fg"
+            />
+            <p className="text-xs text-muted">{dict.galleryManage.settingsExpiryHint}</p>
+          </div>
+          <button
+            type="submit"
+            className="self-start border border-fg px-6 py-2 text-sm uppercase tracking-widest transition-colors hover:bg-fg hover:text-bg"
+          >
+            {dict.galleryManage.settingsSave}
+          </button>
+        </form>
+      </section>
 
       <section className="mt-12">
         <h2 className="font-display text-2xl">{dict.galleryManage.uploadTitle}</h2>

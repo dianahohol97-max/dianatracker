@@ -121,13 +121,18 @@ export default async function PublicGalleryPage({
             display_name: string | null
             logo_key: string | null
             plan: string | null
+            grace_until: string | null
             site_theme: string | null
             site_mode: string | null
             tip_link: string | null
           }[]
         | null
     )?.[0] ?? null
-  const ownerPlan = effectiveGalleryPlan(branding?.plan ?? 'free', null)
+  // Honour the grace window: once a canceled plan's grace expires, the public
+  // gallery must fall back to free (badge returns, custom logo drops) instead of
+  // keeping paid perks forever. grace_until comes from get_gallery_branding
+  // (added in migration 0018); older RPC output leaves it undefined → treated as null.
+  const ownerPlan = effectiveGalleryPlan(branding?.plan ?? 'free', branding?.grace_until ?? null)
   const { theme, mode } = resolveGalleryTheme(
     gallery.theme,
     branding?.site_theme,

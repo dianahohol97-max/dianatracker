@@ -99,7 +99,10 @@ export async function GET(request: NextRequest) {
     .lte('next_charge_at', nowIso)
     .limit(25)
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL
+  // Same fallback as the checkout route — without it a missing env var yields
+  // a "undefined/api/billing/webhook" URL, so async (3DS) charges never get
+  // their callback and the subscription silently stalls behind the pending guard.
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? new URL(request.url).origin
   for (const sub of (dueSubs ?? []) as SubscriptionRow[]) {
     if (!isBillingPeriod(sub.period)) continue
 

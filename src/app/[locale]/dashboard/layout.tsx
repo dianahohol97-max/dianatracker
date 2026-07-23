@@ -3,7 +3,11 @@ import { notFound, redirect } from 'next/navigation'
 import { signOut } from '@/lib/actions/galleries'
 import { getDictionary } from '@/lib/i18n'
 import { isLocale } from '@/lib/i18n/config'
-import { isGalleryPlanId } from '@/lib/plans'
+import {
+  effectiveGalleryPlan,
+  isGalleryPlanId,
+  planStorageBytes,
+} from '@/lib/plans'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { Logo } from '@/components/Logo'
 import { DashNav, type NavItem } from '@/components/dashboard/DashNav'
@@ -56,9 +60,18 @@ export default async function DashboardLayout({
         }[profile.plan]
       : profile?.plan
 
-  const usedPct = profile
-    ? Math.min(Math.round((profile.storage_used_bytes / profile.storage_limit_bytes) * 100), 100)
+  // The limit that actually gates uploads (mirrors src/lib/uploads.ts), so the
+  // meter matches reality after a downgrade/grace expiry instead of over-reporting.
+  const effectiveLimit = profile
+    ? Math.min(
+        profile.storage_limit_bytes,
+        planStorageBytes(effectiveGalleryPlan(profile.plan, profile.grace_until))
+      )
     : 0
+  const usedPct =
+    profile && effectiveLimit > 0
+      ? Math.min(Math.round((profile.storage_used_bytes / effectiveLimit) * 100), 100)
+      : 0
 
   const signOutAction = signOut.bind(null, locale)
 
@@ -80,7 +93,7 @@ export default async function DashboardLayout({
                 <div className="h-full rounded-full bg-accent" style={{ width: `${usedPct}%` }} />
               </div>
               <p className="text-xs font-semibold text-muted">
-                {formatGb(profile.storage_used_bytes)} / {formatGb(profile.storage_limit_bytes)}
+                {formatGb(profile.storage_used_bytes)} / {formatGb(effectiveLimit)}
               </p>
             </div>
           )}

@@ -48,6 +48,34 @@ export async function createGallery(locale: Locale, formData: FormData): Promise
   redirect(`/${locale}/dashboard/galleries/${data.id}`)
 }
 
+/**
+ * Edit an existing gallery's password and expiry — previously only settable at
+ * creation, so protecting or extending a live gallery meant delete + re-upload.
+ * Password: blank leaves it unchanged; the «remove» flag clears it. Expiry: the
+ * field's value wins (blank clears it). RLS restricts the update to the owner.
+ */
+export async function updateGallerySettings(
+  locale: Locale,
+  galleryId: string,
+  formData: FormData
+): Promise<void> {
+  const { supabase } = await requireUser()
+
+  const password = String(formData.get('password') ?? '')
+  const removePassword = formData.get('remove_password') === 'on'
+  const expiresAt = String(formData.get('expires_at') ?? '').trim() || null
+
+  const patch: { expires_at: string | null; password_hash?: string | null } = {
+    expires_at: expiresAt ? new Date(expiresAt).toISOString() : null,
+  }
+  if (removePassword) patch.password_hash = null
+  else if (password) patch.password_hash = hashPassword(password)
+
+  const { error } = await supabase.from('galleries').update(patch).eq('id', galleryId)
+  if (error) throw new Error(`Failed to update gallery settings: ${error.message}`)
+  revalidatePath(`/${locale}/dashboard/galleries/${galleryId}`)
+}
+
 export async function setGalleryCover(
   locale: Locale,
   galleryId: string,
