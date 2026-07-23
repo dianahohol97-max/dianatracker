@@ -3,10 +3,11 @@
  * and /[locale]/privacy. Ukrainian is primary; English is the fallback for all
  * other locales.
  *
- * IMPORTANT: bracketed placeholders — [ФОП / назва], [РНОКПП / ЄДРПОУ],
- * [email], [адреса] — MUST be filled with the real business details before
- * launch, and the whole text reviewed by a lawyer. This is a solid working
- * template, not legal advice.
+ * Business details are filled in (ФОП Гоголь Діана Іванівна). By choice, the
+ * РНОКПП and full address are NOT published — they are provided in the
+ * invoice/contract and on request, which satisfies e-commerce identification
+ * without over-disclosing personal data. This is a working document, not legal
+ * advice; a lawyer review before launch is still recommended.
  */
 
 export interface LegalSection {
@@ -28,15 +29,13 @@ export interface LegalCopy {
   reviewNote: string
 }
 
-const SUPPORT_EMAIL = '[email для звернень]'
+const SUPPORT_EMAIL = 'dianahohol97@gmail.com'
 const ENTITY = 'ФОП Гоголь Діана Іванівна'
-const CODE = '[РНОКПП]'
 const UPDATED = '23.07.2026'
 
 const uk: LegalCopy = {
   backToHome: '← На головну',
-  reviewNote:
-    'Перед запуском заповніть РНОКПП і email для звернень (у квадратних дужках) і бажано узгодьте текст із юристом.',
+  reviewNote: '',
   oferta: {
     title: 'Публічна оферта',
     updated: `Редакція від ${UPDATED}`,
@@ -107,9 +106,9 @@ const uk: LegalCopy = {
           `Найменування: ${ENTITY}`,
           `Група оподаткування: платник єдиного податку третьої групи`,
           `Дата державної реєстрації: 04.09.2023`,
-          `РНОКПП: ${CODE}`,
           `Місцезнаходження: Україна, м. Тернопіль (повна адреса — за запитом)`,
           `Електронна пошта: ${SUPPORT_EMAIL}`,
+          `Повні реквізити (РНОКПП, банківський рахунок) надаються в рахунку та за запитом.`,
         ],
       },
     ],
@@ -173,7 +172,7 @@ const uk: LegalCopy = {
       {
         heading: '8. Контакти',
         paragraphs: [
-          `З питань конфіденційності: ${SUPPORT_EMAIL}. Володілець: ${ENTITY}, код ${CODE}.`,
+          `З питань конфіденційності: ${SUPPORT_EMAIL}. Володілець: ${ENTITY}.`,
         ],
       },
     ],
@@ -182,8 +181,7 @@ const uk: LegalCopy = {
 
 const en: LegalCopy = {
   backToHome: '← Home',
-  reviewNote:
-    'Before launch, fill in the tax ID (РНОКПП) and contact email (in brackets) and ideally have the text reviewed by a lawyer.',
+  reviewNote: '',
   oferta: {
     title: 'Public Offer (Terms)',
     updated: `Version of ${UPDATED}`,
@@ -248,9 +246,9 @@ const en: LegalCopy = {
           `Name: ${ENTITY}`,
           `Tax status: single-tax payer, third group`,
           `Registration date: 04.09.2023`,
-          `Tax ID (РНОКПП): ${CODE}`,
           `Location: Ukraine, Ternopil (full address on request)`,
           `Email: ${SUPPORT_EMAIL}`,
+          `Full details (tax ID, bank account) are provided in the invoice and on request.`,
         ],
       },
     ],
@@ -310,7 +308,7 @@ const en: LegalCopy = {
       },
       {
         heading: '8. Contact',
-        paragraphs: [`Privacy questions: ${SUPPORT_EMAIL}. Controller: ${ENTITY}, code ${CODE}.`],
+        paragraphs: [`Privacy questions: ${SUPPORT_EMAIL}. Controller: ${ENTITY}.`],
       },
     ],
   },
