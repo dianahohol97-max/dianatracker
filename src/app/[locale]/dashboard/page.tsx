@@ -89,7 +89,30 @@ export default async function DashboardPage({ params }: { params: { locale: stri
       </header>
 
       {cards.length === 0 ? (
-        <p className="mt-12 max-w-xl leading-relaxed text-muted">{dict.dashboard.empty}</p>
+        <div className="mt-6 max-w-2xl rounded-2xl border border-line bg-white p-8 shadow-sm">
+          <h2 className="font-brand text-2xl">{dict.dashboard.onboardTitle}</h2>
+          <p className="mt-3 leading-relaxed text-muted">{dict.dashboard.onboardLede}</p>
+          <ol className="mt-6 flex flex-col gap-4">
+            {[
+              dict.dashboard.onboardStep1,
+              dict.dashboard.onboardStep2,
+              dict.dashboard.onboardStep3,
+            ].map((step, index) => (
+              <li key={index} className="flex items-start gap-3">
+                <span className="grid h-7 w-7 flex-none place-items-center rounded-full bg-accent text-sm font-bold text-white">
+                  {index + 1}
+                </span>
+                <span className="pt-0.5 leading-relaxed">{step}</span>
+              </li>
+            ))}
+          </ol>
+          <Link
+            href={`/${locale}/dashboard/galleries/new`}
+            className="mt-8 inline-block rounded-full bg-accent px-7 py-3 text-sm font-bold text-white no-underline transition-colors hover:bg-accent-deep"
+          >
+            {dict.dashboard.onboardCta}
+          </Link>
+        </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {cards.map(({ gallery, coverUrl, photoCount }) => (

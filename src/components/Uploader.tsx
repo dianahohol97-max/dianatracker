@@ -3,6 +3,7 @@
 import { useCallback, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { generateImageVariants } from '@/lib/images/variants'
+import { generateVideoPoster } from '@/lib/images/videoPoster'
 
 /**
  * Direct-to-R2 uploader:
@@ -119,7 +120,9 @@ async function uploadMultipart(
   galleryId: string,
   file: File,
   contentType: string,
-  onProgress: (fraction: number) => void
+  onProgress: (fraction: number) => void,
+  variants: Record<string, string>,
+  dimensions: { width?: number; height?: number }
 ): Promise<void> {
   const { key, uploadId } = await postJson<{ key: string; uploadId: string }>(
     '/api/uploads/multipart/create',
@@ -183,6 +186,8 @@ async function uploadMultipart(
       parts,
       contentType,
       sizeBytes: file.size,
+      variants,
+      ...dimensions,
     })
   } catch (error) {
     // Best-effort cleanup; R2 expires stale multipart uploads anyway.
@@ -228,10 +233,37 @@ export function Uploader({
       updateItem(item.id, { status: 'uploading' })
       try {
         const contentType = item.file.type || 'application/octet-stream'
+        const isVideo = contentType.startsWith('video/')
+
+        // A video gets a lightweight poster still so the gallery grid never
+        // streams the full original just to render a tile. Optional — a failed
+        // poster (odd codec) just falls back to the current behaviour.
+        const variants: Record<string, string> = {}
+        let videoDims: { width?: number; height?: number } = {}
+        if (isVideo) {
+          const poster = await generateVideoPoster(item.file).catch(() => null)
+          if (poster) {
+            const target = await presign('poster.jpg', 'image/jpeg', poster.blob.size, 'poster')
+            const put = await fetch(target.uploadUrl, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'image/jpeg' },
+              body: poster.blob,
+            })
+            if (put.ok) {
+              variants.poster = target.key
+              videoDims = { width: poster.width, height: poster.height }
+            }
+          }
+        }
 
         if (item.file.size > MULTIPART_THRESHOLD) {
-          await uploadMultipart(galleryId, item.file, contentType, (fraction) =>
-            updateItem(item.id, { progress: Math.round(fraction * 100) })
+          await uploadMultipart(
+            galleryId,
+            item.file,
+            contentType,
+            (fraction) => updateItem(item.id, { progress: Math.round(fraction * 100) }),
+            variants,
+            videoDims
           )
           updateItem(item.id, { status: 'done', progress: 100 })
           return
@@ -245,7 +277,6 @@ export function Uploader({
           updateItem(item.id, { progress: Math.round(progress * 0.9) })
         )
 
-        const variants: Record<string, string> = {}
         for (const rendition of await generateImageVariants(item.file, watermarkText)) {
           const target = await presign(
             `${rendition.name}.jpg`,
@@ -263,7 +294,7 @@ export function Uploader({
         }
         updateItem(item.id, { progress: 95 })
 
-        const dimensions = await readImageSize(item.file)
+        const dimensions = isVideo ? videoDims : await readImageSize(item.file)
         const completeResponse = await fetch('/api/uploads/complete', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
