@@ -68,6 +68,7 @@ export async function generateMetadata({
       url: `/${params.locale}/s/${params.handle}`,
       locale: ogLocale(params.locale),
     },
+    twitter: { card: 'summary_large_image', title, description },
     robots: {
       index: true,
       follow: true,
