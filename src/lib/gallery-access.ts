@@ -29,8 +29,8 @@ export function unlockCookieValue(galleryId: string): string {
 }
 
 /** True when the gallery has no password or the visitor holds a valid unlock cookie. */
-export function isGalleryUnlocked(gallery: Pick<Gallery, 'id' | 'password_hash'>): boolean {
-  if (!gallery.password_hash) return true
+export function isGalleryUnlocked(gallery: Pick<Gallery, 'id' | 'has_password'>): boolean {
+  if (!gallery.has_password) return true
   const cookie = cookies().get(unlockCookieName(gallery.id))
   return cookie?.value === unlockCookieValue(gallery.id)
 }

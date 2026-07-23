@@ -1,0 +1,14 @@
+-- Step 2 of closing the password_hash leak. Apply ONLY after the app deploy
+-- that reads has_password instead of password_hash is live, or the public
+-- gallery / dashboard reads would hit "permission denied for column".
+--
+-- Before: the public-read RLS policy let the anon key (embedded in every page)
+-- select every column of a published gallery, including the scrypt password
+-- hash — enabling offline brute-force of gallery passwords. RLS is row-level
+-- only, so a column-level REVOKE is what actually closes it.
+--
+-- After: anon/authenticated can no longer select password_hash at all. The
+-- hash is written by the owner (INSERT/UPDATE, not revoked) and read only by
+-- the service role in the unlock route (server-side). has_password (a boolean,
+-- migration 0019) covers every "is this gallery locked?" check.
+revoke select (password_hash) on public.galleries from anon, authenticated;

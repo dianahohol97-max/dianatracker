@@ -29,7 +29,9 @@ export interface Gallery {
   description: string | null
   event_date: string | null
   cover_asset_id: string | null
-  password_hash: string | null
+  /** Whether a password is set. The scrypt hash itself is never selectable by
+   *  the anon/authenticated key — only the service role reads it (unlock route). */
+  has_password: boolean
   expires_at: string | null
   is_published: boolean
   view_count: number

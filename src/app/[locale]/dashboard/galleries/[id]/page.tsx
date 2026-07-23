@@ -42,7 +42,9 @@ export default async function ManageGalleryPage({
 
   const { data: gallery } = await supabase
     .from('galleries')
-    .select('*')
+    .select(
+      'id, owner_id, slug, title, description, event_date, cover_asset_id, has_password, expires_at, is_published, view_count, created_at, updated_at, theme'
+    )
     .eq('id', params.id)
     .eq('owner_id', user.id)
     .single<Gallery>()
@@ -112,7 +114,7 @@ export default async function ManageGalleryPage({
   const deleteAction = deleteGallery.bind(null, locale, gallery.id)
   const themeAction = setGalleryTheme.bind(null, locale, gallery.id)
   const settingsAction = updateGallerySettings.bind(null, locale, gallery.id)
-  const hasPassword = !!gallery.password_hash
+  const hasPassword = gallery.has_password
   const expiryDefault = gallery.expires_at ? gallery.expires_at.slice(0, 10) : ''
 
   const themeOptions: { value: string; label: string }[] = [

@@ -31,9 +31,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   // PostgREST refuses the embed.
   const { data: gallery } = await supabase
     .from('galleries')
-    .select('id, password_hash')
+    .select('id, has_password')
     .eq('id', asset.gallery_id)
-    .single<{ id: string; password_hash: string | null }>()
+    .single<{ id: string; has_password: boolean }>()
 
   if (!gallery) {
     return NextResponse.json({ error: 'not_found' }, { status: 404 })
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   } = await supabase.auth.getUser()
   const isOwner = user?.id === asset.owner_id
 
-  if (!isOwner && !isGalleryUnlocked({ id: gallery.id, password_hash: gallery.password_hash })) {
+  if (!isOwner && !isGalleryUnlocked({ id: gallery.id, has_password: gallery.has_password })) {
     return NextResponse.json({ error: 'locked' }, { status: 403 })
   }
 
