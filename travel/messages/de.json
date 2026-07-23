@@ -53,6 +53,27 @@
     "sources": "Quellen",
     "loading": "Wird geladen…"
   },
+  "factBox": {
+    "title": "Schnelle Fakten",
+    "whenToGo": "Beste Reisezeit",
+    "budget": "Budget",
+    "duration": "Wie viele Tage",
+    "gettingThere": "Anreise"
+  },
+  "priceTable": {
+    "item": "Position",
+    "price": "Preis",
+    "approximate": "Ungefähr"
+  },
+  "faq": {
+    "title": "Häufig gestellte Fragen"
+  },
+  "guides": {
+    "title": "Reiseführer",
+    "description": "Ausführliche, recherchierte Reiseführer zu den beliebtesten Reisezielen der Welt — geprüfte Fakten statt Fülltext.",
+    "updated": "Aktualisiert",
+    "readingType": "Reiseführer"
+  },
   "notFound": {
     "title": "Seite nicht gefunden",
     "description": "Die gesuchte Seite existiert nicht oder wurde verschoben.",

@@ -53,6 +53,27 @@
     "sources": "Sources",
     "loading": "Loading…"
   },
+  "factBox": {
+    "title": "Quick facts",
+    "whenToGo": "When to go",
+    "budget": "Budget",
+    "duration": "How many days",
+    "gettingThere": "Getting there"
+  },
+  "priceTable": {
+    "item": "Item",
+    "price": "Price",
+    "approximate": "Approximate"
+  },
+  "faq": {
+    "title": "Frequently asked questions"
+  },
+  "guides": {
+    "title": "Travel guides",
+    "description": "Deep, research-based guides to the world's most popular destinations — verified facts, not filler.",
+    "updated": "Updated",
+    "readingType": "Guide"
+  },
   "notFound": {
     "title": "Page not found",
     "description": "The page you are looking for does not exist or has moved.",

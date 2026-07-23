@@ -53,6 +53,27 @@
     "sources": "Źródła",
     "loading": "Ładowanie…"
   },
+  "factBox": {
+    "title": "Szybkie fakty",
+    "whenToGo": "Kiedy jechać",
+    "budget": "Budżet",
+    "duration": "Ile dni",
+    "gettingThere": "Jak dojechać"
+  },
+  "priceTable": {
+    "item": "Pozycja",
+    "price": "Cena",
+    "approximate": "Orientacyjnie"
+  },
+  "faq": {
+    "title": "Najczęściej zadawane pytania"
+  },
+  "guides": {
+    "title": "Przewodniki",
+    "description": "Szczegółowe, oparte na źródłach przewodniki po najpopularniejszych kierunkach świata — zweryfikowane fakty zamiast ogólników.",
+    "updated": "Zaktualizowano",
+    "readingType": "Przewodnik"
+  },
   "notFound": {
     "title": "Nie znaleziono strony",
     "description": "Szukana strona nie istnieje lub została przeniesiona.",
