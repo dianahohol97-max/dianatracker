@@ -461,6 +461,9 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
           <Logo size={17} textSize={13} />
           <span>{t.footer.tagline}</span>
           <span style={{ display: 'inline-flex', gap: 16, flexWrap: 'wrap' }}>
+            <Link href={`/${locale}/blog`} style={{ color: 'inherit' }}>
+              {t.footer.blog}
+            </Link>
             <Link href={`/${locale}/oferta`} style={{ color: 'inherit' }}>
               {t.footer.terms}
             </Link>

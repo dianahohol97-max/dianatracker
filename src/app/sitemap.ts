@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next'
 import { createClient } from '@supabase/supabase-js'
+import { getArticles } from '@/lib/blog/articles'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
 
@@ -13,7 +14,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const entries: MetadataRoute.Sitemap = [
     { url: `${BASE_URL}/uk`, changeFrequency: 'weekly', priority: 1, alternates: { languages } },
     { url: `${BASE_URL}/en`, changeFrequency: 'weekly', priority: 0.8, alternates: { languages } },
+    { url: `${BASE_URL}/uk/blog`, changeFrequency: 'weekly', priority: 0.7 },
   ]
+
+  // Blog articles (Ukrainian; canonical on /uk).
+  for (const article of getArticles()) {
+    entries.push({
+      url: `${BASE_URL}/uk/blog/${article.slug}`,
+      lastModified: new Date(article.date),
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    })
+  }
 
   // Published photographer sites via a security-definer RPC (anon key).
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
