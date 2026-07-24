@@ -74,7 +74,7 @@ export interface LandingCopy {
   }
   faq: { label: string; title: string; items: { q: string; a: string }[] }
   final: { label: string; titleBefore: string; titleAccent: string; cta: string }
-  footer: { tagline: string; terms: string; privacy: string }
+  footer: { tagline: string; blog: string; terms: string; privacy: string }
 }
 
 const uk: LandingCopy = {
@@ -252,6 +252,7 @@ const uk: LandingCopy = {
   },
   footer: {
     tagline: 'Галереї · Сайти · Бронювання — для фотографів України',
+    blog: 'Блог',
     terms: 'Публічна оферта',
     privacy: 'Політика конфіденційності',
   },
@@ -431,6 +432,7 @@ const en: LandingCopy = {
   },
   footer: {
     tagline: 'Galleries · Sites · Booking — for photographers in Ukraine',
+    blog: 'Blog',
     terms: 'Public offer',
     privacy: 'Privacy policy',
   },
