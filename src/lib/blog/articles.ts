@@ -1,8 +1,14 @@
 /**
- * Blog content — Ukrainian SEO articles, stored as structured blocks (no MDX
- * tooling, no DB). Add an article by appending to ARTICLES. The pages render
- * from here and pull metadata / JSON-LD off the same objects.
+ * Blog content — Ukrainian SEO articles as structured blocks (no MDX, no DB).
+ *
+ * Two sources, merged:
+ *  - CURATED: hand-written articles in this file.
+ *  - content/blog/generated/*.json: articles produced by the content engine
+ *    (scripts/generate-article.mjs, run on a schedule via GitHub Actions).
+ * Read at build time and baked into the static blog pages.
  */
+import fs from 'node:fs'
+import path from 'node:path'
 
 export type Block =
   | { type: 'p'; text: string }
@@ -22,10 +28,10 @@ export interface Article {
 }
 
 /**
- * Articles, newest first. Content is Ukrainian (the launch market); the blog
+ * Hand-written articles. Content is Ukrainian (the launch market); the blog
  * canonicalizes to /uk/blog regardless of the route locale.
  */
-export const ARTICLES: Article[] = [
+const CURATED: Article[] = [
   {
     slug: 'yak-peredaty-foto-kliyentu',
     title: 'Як передати фото клієнту після зйомки: 5 способів',
@@ -198,10 +204,64 @@ export const ARTICLES: Article[] = [
   },
 ]
 
+/* ---------- generated articles (content/blog/generated/*.json) ---------- */
+
+const GENERATED_DIR = path.join(process.cwd(), 'content', 'blog', 'generated')
+
+function isBlock(value: unknown): value is Block {
+  if (typeof value !== 'object' || value === null) return false
+  const b = value as Record<string, unknown>
+  if (b.type === 'p' || b.type === 'h2') return typeof b.text === 'string'
+  if (b.type === 'cta') return typeof b.text === 'string' && typeof b.href === 'string'
+  if (b.type === 'ul')
+    return Array.isArray(b.items) && b.items.every((i) => typeof i === 'string')
+  return false
+}
+
+function isArticle(value: unknown): value is Article {
+  if (typeof value !== 'object' || value === null) return false
+  const a = value as Record<string, unknown>
+  return (
+    typeof a.slug === 'string' &&
+    typeof a.title === 'string' &&
+    typeof a.description === 'string' &&
+    typeof a.date === 'string' &&
+    typeof a.readingMinutes === 'number' &&
+    Array.isArray(a.tags) &&
+    a.tags.every((t) => typeof t === 'string') &&
+    Array.isArray(a.body) &&
+    a.body.length > 0 &&
+    a.body.every(isBlock)
+  )
+}
+
+/** Read + validate the engine's JSON articles. A malformed file is skipped, not fatal. */
+function loadGenerated(): Article[] {
+  try {
+    if (!fs.existsSync(GENERATED_DIR)) return []
+    return fs
+      .readdirSync(GENERATED_DIR)
+      .filter((name) => name.endsWith('.json'))
+      .map((name) => {
+        try {
+          return JSON.parse(fs.readFileSync(path.join(GENERATED_DIR, name), 'utf8')) as unknown
+        } catch {
+          return null
+        }
+      })
+      .filter(isArticle)
+  } catch {
+    return []
+  }
+}
+
+/** All articles, newest first. Curated wins over a generated file of the same slug. */
 export function getArticles(): Article[] {
-  return [...ARTICLES].sort((a, b) => (a.date < b.date ? 1 : -1))
+  const bySlug = new Map<string, Article>()
+  for (const article of [...loadGenerated(), ...CURATED]) bySlug.set(article.slug, article)
+  return [...bySlug.values()].sort((a, b) => (a.date < b.date ? 1 : -1))
 }
 
 export function getArticle(slug: string): Article | null {
-  return ARTICLES.find((a) => a.slug === slug) ?? null
+  return getArticles().find((a) => a.slug === slug) ?? null
 }
